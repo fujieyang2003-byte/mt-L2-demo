@@ -1,6 +1,8 @@
 # 广告经营管理系统 (Ad Operations System)
 
-基于 NoCode 平台构建的广告经营管理系统 Demo，用于展示多角色、多维度的广告业务经营管理场景。
+广告经营管理系统 Demo，用于展示多角色、多维度的广告业务经营管理场景。纯前端项目，所有数据均为 Demo 模拟数据，无需数据库。
+
+**在线体验**：[https://mt-l2-demo.pages.dev](https://mt-l2-demo.pages.dev)
 
 ## 功能模块
 
@@ -12,32 +14,31 @@
 
 ## 角色体系
 
-系统支持 4 种角色，不同角色看到的数据维度和操作权限不同：
+系统支持 4 种角色，登录页面可自由切换体验：
 
-- **平台管理员 (platform_admin)**：全局视角，按区域/总商维度查看，可下钻到城市级
-- **广告业务经理 (biz_manager)**：负责区域视角，跟踪城市级经营数据
-- **合作商 (partner)**：负责城市视角，管理下属 BD 经营表现
-- **BD**：门店级视角，查看门店诊断卡片和 AI 推荐话术
+- **平台管理员**：全局视角，按区域/总商维度查看，可下钻到城市级
+- **广告业务经理**：负责区域视角，跟踪城市级经营数据
+- **合作商**：负责城市视角，管理下属 BD 经营表现
+- **BD/运营**：门店级视角，查看门店诊断卡片和 AI 推荐话术
 
 ## 技术栈
 
 - React + Vite
 - shadcn/ui + Tailwind CSS
 - react-router-dom (HashRouter)
-- Supabase (数据库)
-- 大象消息推送 (NoCode Edge Function)
 
 ## 本地开发
 
 ```bash
 # 安装依赖
-yarn install
+npm install
 
 # 启动开发服务器
-yarn dev
-```
+npm run dev
 
-> **注意**：本项目为 Demo 展示用途，数据库连接和大象推送功能需要配置真实的 Supabase 实例和大象开放平台凭证。
+# 构建生产版本
+npm run build
+```
 
 ## 项目结构
 
@@ -50,17 +51,14 @@ src/
 ├── config/
 │   └── menuConfig.js       # 菜单配置
 ├── contexts/
-│   ├── NoCodeContext.jsx    # NoCode SDK 上下文
-│   └── UserContext.jsx      # 用户认证上下文
-├── integrations/
-│   └── supabase/client.js   # Supabase 客户端
+│   └── UserContext.jsx      # 用户认证上下文（Demo 模式）
 ├── layouts/
 │   └── AdminLayout.jsx      # 管理后台布局
 ├── pages/
 │   ├── BusinessDiagnosis.jsx   # 经营诊断
 │   ├── GoalManagement.jsx      # 目标管理
 │   ├── IncentiveCalculation.jsx # 激励测算
-│   ├── Login.jsx               # 登录页
+│   ├── Login.jsx               # 登录页（角色选择）
 │   ├── Overview.jsx            # 首页总览
 │   └── PermissionManagement.jsx # 权限管理
 ├── App.jsx
@@ -69,7 +67,11 @@ src/
 
 ## 部署
 
-本项目设计运行在 [NoCode 平台](https://nocode.sankuai.com) 上，部署地址：https://ad-ops-system.mynocode.host
+本项目通过 [Cloudflare Pages](https://pages.cloudflare.com) 部署，连接 GitHub 仓库后自动构建。
+
+构建配置：
+- **Build command**：`npm run build`
+- **Build output directory**：`dist`
 
 ## License
 
