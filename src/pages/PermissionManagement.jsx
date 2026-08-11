@@ -3,7 +3,6 @@ import { toast } from "sonner";
 import PageHeader from "@/components/dashboard/PageHeader";
 import RequireAdmin from "@/components/dashboard/RequireAdmin";
 import { useUser } from "@/contexts/UserContext";
-import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -64,80 +63,45 @@ const StatusBadge = ({ status }) => {
   return <Badge className={`border-none font-normal ${cfg.className}`}>{cfg.label}</Badge>;
 };
 
-/** Tab 1：权限申请审批 */
+/* ============ Demo Mock 数据 ============ */
+const MOCK_REQUESTS = [
+  { id: 1, user_mis: "liwei01", user_name: "李伟", permission_key: "role_request", request_reason: "需要查看经营诊断数据", status: "pending", created_at: "2024-12-20T10:30:00Z" },
+  { id: 2, user_mis: "zhangfei", user_name: "张飞", permission_key: "data_export", request_reason: "需要导出月度报表", status: "approved", created_at: "2024-12-18T08:15:00Z", reviewed_by: "admin_demo" },
+  { id: 3, user_mis: "wangwu03", user_name: "王武", permission_key: "role_request", request_reason: "转岗至运营组", status: "rejected", created_at: "2024-12-15T14:00:00Z", reviewed_by: "admin_demo" },
+];
+
+const MOCK_USERS = [
+  { mis_id: "admin_demo", name: "张管理", role: "platform_admin", region: null, is_active: true, created_at: "2024-01-01T00:00:00Z" },
+  { mis_id: "biz_demo", name: "李经理", role: "biz_manager", region: "福建区域", is_active: true, created_at: "2024-03-15T00:00:00Z" },
+  { mis_id: "partner_demo", name: "王合作", role: "partner", region: "福建区域", is_active: true, created_at: "2024-06-01T00:00:00Z" },
+  { mis_id: "bd_demo", name: "赵运营", role: "bd", region: "福建区域", is_active: true, created_at: "2024-06-01T00:00:00Z" },
+  { mis_id: "liwei01", name: "李伟", role: "pending", region: null, is_active: true, created_at: "2024-12-20T10:00:00Z" },
+];
+
+/** Tab 1：权限申请审批（Demo mock） */
 const ApprovalTab = () => {
-  const { currentUser } = useUser();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processingId, setProcessingId] = useState(null);
 
-  const loadRequests = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("ad_permission_requests")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("查询权限申请列表失败", error);
-      toast.error("加载权限申请列表失败");
-    } else {
-      setRequests(data || []);
-    }
-    setLoading(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setRequests([...MOCK_REQUESTS]);
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    loadRequests();
-  }, [loadRequests]);
-
-  const handleReview = async (row, decision) => {
+  const handleReview = (row, decision) => {
     if (processingId) return;
     setProcessingId(row.id);
-
-    try {
-      const reviewerMis = currentUser?.mis_id || null;
-      const nowIso = new Date().toISOString();
-
-      const { error: updateError } = await supabase
-        .from("ad_permission_requests")
-        .update({
-          status: decision,
-          reviewed_by: reviewerMis,
-          reviewed_at: nowIso,
-        })
-        .eq("id", row.id);
-
-      if (updateError) {
-        console.error("更新权限申请状态失败", updateError);
-        toast.error("操作失败，请稍后重试");
-        return;
-      }
-
-      const { error: upsertError } = await supabase
-        .from("ad_user_permissions")
-        .upsert(
-          {
-            user_mis: row.user_mis,
-            permission_key: row.permission_key,
-            status: decision,
-            approved_by: reviewerMis,
-            approved_at: nowIso,
-          },
-          { onConflict: "user_mis,permission_key" }
-        );
-
-      if (upsertError) {
-        console.error("同步用户权限失败", upsertError);
-        toast.error("审批状态已更新，但同步权限记录失败");
-      } else {
-        toast.success(decision === "approved" ? "已通过该权限申请" : "已拒绝该权限申请");
-      }
-
-      await loadRequests();
-    } finally {
+    setTimeout(() => {
+      setRequests((prev) =>
+        prev.map((r) => (r.id === row.id ? { ...r, status: decision, reviewed_by: "admin_demo" } : r))
+      );
+      toast.success(decision === "approved" ? "已通过该权限申请" : "已拒绝该权限申请");
       setProcessingId(null);
-    }
+    }, 300);
   };
 
   if (loading) {
@@ -187,22 +151,11 @@ const ApprovalTab = () => {
                   <TableCell className="text-right">
                     {row.status === "pending" ? (
                       <div className="flex items-center justify-end gap-2">
-                        <Button
-                          size="sm"
-                          disabled={processingId === row.id}
-                          onClick={() => handleReview(row, "approved")}
-                        >
-                          {processingId === row.id && (
-                            <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />
-                          )}
+                        <Button size="sm" disabled={processingId === row.id} onClick={() => handleReview(row, "approved")}>
+                          {processingId === row.id && <Loader2 className="w-3.5 h-3.5 mr-1 animate-spin" />}
                           通过
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={processingId === row.id}
-                          onClick={() => handleReview(row, "rejected")}
-                        >
+                        <Button size="sm" variant="outline" disabled={processingId === row.id} onClick={() => handleReview(row, "rejected")}>
                           拒绝
                         </Button>
                       </div>
@@ -220,73 +173,38 @@ const ApprovalTab = () => {
   );
 };
 
-/** Tab 2：用户管理 */
+/** Tab 2：用户管理（Demo mock） */
 const UserManagementTab = () => {
   const { currentUser } = useUser();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [updatingMis, setUpdatingMis] = useState(null);
 
-  const loadUsers = useCallback(async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("ad_users")
-      .select("*")
-      .order("created_at", { ascending: false });
-
-    if (error) {
-      console.error("查询用户列表失败", error);
-      toast.error("加载用户列表失败");
-    } else {
-      setUsers(data || []);
-    }
-    setLoading(false);
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setUsers([...MOCK_USERS]);
+      setLoading(false);
+    }, 300);
+    return () => clearTimeout(timer);
   }, []);
 
-  useEffect(() => {
-    loadUsers();
-  }, [loadUsers]);
-
-  const handleRoleChange = async (row, nextRole) => {
+  const handleRoleChange = (row, nextRole) => {
     if (nextRole === row.role || updatingMis === row.mis_id) return;
     setUpdatingMis(row.mis_id);
-
-    const prevUsers = users;
-    setUsers((list) =>
-      list.map((item) => (item.mis_id === row.mis_id ? { ...item, role: nextRole } : item))
-    );
-
-    const { error } = await supabase
-      .from("ad_users")
-      .update({ role: nextRole, updated_at: new Date().toISOString() })
-      .eq("mis_id", row.mis_id);
-
-    if (error) {
-      console.error("更新用户角色失败", error);
-      toast.error("更新角色失败，请稍后重试");
-      setUsers(prevUsers);
-    } else {
+    setTimeout(() => {
+      setUsers((prev) =>
+        prev.map((u) => (u.mis_id === row.mis_id ? { ...u, role: nextRole } : u))
+      );
       toast.success(`已将 ${row.name || row.mis_id} 的角色更新为「${ROLE_LABEL_MAP[nextRole] || nextRole}」`);
-    }
-    setUpdatingMis(null);
+      setUpdatingMis(null);
+    }, 300);
   };
 
-  const handleDeleteUser = async (row) => {
-    const confirmed = window.confirm(
-      `确定要移除用户 ${row.name || row.mis_id} 吗？此操作不可恢复。`
-    );
+  const handleDeleteUser = (row) => {
+    const confirmed = window.confirm(`确定要移除用户 ${row.name || row.mis_id} 吗？此操作不可恢复。`);
     if (!confirmed) return;
-
-    const { error } = await supabase.from("ad_users").delete().eq("mis_id", row.mis_id);
-
-    if (error) {
-      console.error("删除用户失败", error);
-      toast.error("移除用户失败，请稍后重试");
-      return;
-    }
-
+    setUsers((prev) => prev.filter((u) => u.mis_id !== row.mis_id));
     toast.success(`已移除用户 ${row.name || row.mis_id}`);
-    await loadUsers();
   };
 
   if (loading) {
@@ -325,11 +243,7 @@ const UserManagementTab = () => {
                   <TableCell className="font-medium text-gray-800">{row.mis_id}</TableCell>
                   <TableCell className="text-gray-600">{row.name || "-"}</TableCell>
                   <TableCell>
-                    <Select
-                      value={row.role}
-                      onValueChange={(value) => handleRoleChange(row, value)}
-                      disabled={updatingMis === row.mis_id}
-                    >
+                    <Select value={row.role} onValueChange={(value) => handleRoleChange(row, value)} disabled={updatingMis === row.mis_id}>
                       <SelectTrigger className="w-40 h-8">
                         <SelectValue />
                       </SelectTrigger>
@@ -344,28 +258,15 @@ const UserManagementTab = () => {
                   </TableCell>
                   <TableCell className="text-gray-500">{row.region || "-"}</TableCell>
                   <TableCell>
-                    <Badge
-                      className={`border-none font-normal ${
-                        row.is_active === false
-                          ? "bg-gray-100 text-gray-500"
-                          : "bg-emerald-50 text-emerald-600"
-                      }`}
-                    >
+                    <Badge className={`border-none font-normal ${row.is_active === false ? "bg-gray-100 text-gray-500" : "bg-emerald-50 text-emerald-600"}`}>
                       {row.is_active === false ? "已禁用" : "正常"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      {updatingMis === row.mis_id && (
-                        <Loader2 className="w-4 h-4 animate-spin text-gray-400" />
-                      )}
+                      {updatingMis === row.mis_id && <Loader2 className="w-4 h-4 animate-spin text-gray-400" />}
                       {row.mis_id !== currentUser?.mis_id && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                          onClick={() => handleDeleteUser(row)}
-                        >
+                        <Button variant="ghost" size="sm" className="text-red-500 hover:text-red-700 hover:bg-red-50" onClick={() => handleDeleteUser(row)}>
                           <Trash2 className="w-3.5 h-3.5 mr-1" />
                           移除
                         </Button>

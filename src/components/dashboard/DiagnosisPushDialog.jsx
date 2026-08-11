@@ -11,12 +11,9 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 /**
  * 基于当前行数据生成一段 AI 模拟的经营诊断文本。
- * 会尽量从 rowData 中提取常见字段（城市/区域/名称、收入、RF、MR、YoY、MoM、健康评级等），
- * 拼接成"【经营诊断】...."格式的文本。
  */
 const buildDiagnosisText = (targetName, rowData = {}) => {
   const name = targetName || rowData.name || rowData.city || rowData.region || "该对象";
@@ -46,18 +43,13 @@ const buildDiagnosisText = (targetName, rowData = {}) => {
 };
 
 /**
- * 诊断消息下发弹窗。
- * @param {boolean} open 弹窗是否打开
- * @param {(open: boolean) => void} onOpenChange 弹窗开关状态变化回调
- * @param {string} targetName 推送目标名称（如城市/区域/BD 姓名）
- * @param {string} targetMis 推送目标 MIS 号，默认 "yangfujie"
- * @param {object} rowData 当前行数据，用于生成诊断文本
+ * 诊断消息下发弹窗（Demo 模式：模拟发送，不调用真实 API）。
  */
 const DiagnosisPushDialog = ({
   open,
   onOpenChange,
   targetName,
-  targetMis = "yangfujie",
+  targetMis = "demo_user",
   rowData = {},
 }) => {
   const [content, setContent] = useState("");
@@ -78,21 +70,10 @@ const DiagnosisPushDialog = ({
     if (sending) return;
     setSending(true);
     try {
-      const { error } = await supabase.functions.invoke("nocode-pushmsg", {
-        body: { misList: targetMis, content },
-      });
-
-      if (error) {
-        console.error("大象消息推送失败", error);
-        toast.error("消息推送失败，请稍后重试");
-        return;
-      }
-
-      toast.success(`消息已推送至 ${targetMis}`);
+      // Demo 模式：模拟 500ms 网络延迟后提示成功
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      toast.success(`诊断消息已推送至 ${targetName}（${targetMis}）`);
       onOpenChange(false);
-    } catch (err) {
-      console.error("大象消息推送异常", err);
-      toast.error("消息推送失败，请稍后重试");
     } finally {
       setSending(false);
     }
