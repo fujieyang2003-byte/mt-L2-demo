@@ -1,0 +1,7 @@
+node_modules
+build
+dist
+.catpaw
+.env.local
+.env.*.local
+yarn-error.log
