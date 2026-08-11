@@ -95,7 +95,7 @@ const Sidebar = () => {
       </nav>
 
       <div className="px-4 py-3 border-t border-gray-100 text-[11px] text-gray-400">
-        © 2024 广告经营管理系统
+        © 2026 广告经营管理系统 · from 杨富杰
       </div>
     </aside>
   );
