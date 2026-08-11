@@ -93,7 +93,7 @@ const Login = () => {
         </Button>
 
         <p className="text-[11px] text-gray-300 text-center mt-8">
-          © 2024 增值运营组 · Demo 演示版本
+          © 2026 增值运营组 · Demo 演示版本
         </p>
       </div>
     </div>
