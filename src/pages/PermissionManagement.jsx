@@ -72,9 +72,9 @@ const MOCK_REQUESTS = [
 
 const MOCK_USERS = [
   { mis_id: "admin_demo", name: "张管理", role: "platform_admin", region: null, is_active: true, created_at: "2024-01-01T00:00:00Z" },
-  { mis_id: "biz_demo", name: "李经理", role: "biz_manager", region: "福建区域", is_active: true, created_at: "2024-03-15T00:00:00Z" },
-  { mis_id: "partner_demo", name: "王合作", role: "partner", region: "福建区域", is_active: true, created_at: "2024-06-01T00:00:00Z" },
-  { mis_id: "bd_demo", name: "赵运营", role: "bd", region: "福建区域", is_active: true, created_at: "2024-06-01T00:00:00Z" },
+  { mis_id: "biz_demo", name: "李经理", role: "biz_manager", region: "华东区", is_active: true, created_at: "2024-03-15T00:00:00Z" },
+  { mis_id: "partner_demo", name: "王合作", role: "partner", region: "华东区", is_active: true, created_at: "2024-06-01T00:00:00Z" },
+  { mis_id: "bd_demo", name: "赵运营", role: "bd", region: "华东区", is_active: true, created_at: "2024-06-01T00:00:00Z" },
   { mis_id: "liwei01", name: "李伟", role: "pending", region: null, is_active: true, created_at: "2024-12-20T10:00:00Z" },
 ];
 

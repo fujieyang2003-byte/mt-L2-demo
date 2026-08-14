@@ -1,13 +1,14 @@
 import {
   LayoutDashboard,
-  Target,
-  Calculator,
-  Activity,
+  PieChart,
+  Store,
+  Network,
   ShieldCheck,
 } from "lucide-react";
 
 /**
  * 系统菜单与路由的统一配置。
+ * 4个业务Tab + 管理员权限管理
  * requireAdmin: true 表示仅管理员角色可见该菜单项。
  */
 export const menuConfig = [
@@ -18,22 +19,22 @@ export const menuConfig = [
     icon: LayoutDashboard,
   },
   {
-    key: "goal-management",
-    title: "目标管理",
-    path: "/goal-management",
-    icon: Target,
+    key: "product",
+    title: "产品",
+    path: "/product",
+    icon: PieChart,
   },
   {
-    key: "incentive-calculation",
-    title: "激励测算",
-    path: "/incentive-calculation",
-    icon: Calculator,
+    key: "merchant",
+    title: "商家",
+    path: "/merchant",
+    icon: Store,
   },
   {
-    key: "business-diagnosis",
-    title: "经营诊断",
-    path: "/business-diagnosis",
-    icon: Activity,
+    key: "channel",
+    title: "渠道",
+    path: "/channel",
+    icon: Network,
   },
   {
     key: "permission-management",

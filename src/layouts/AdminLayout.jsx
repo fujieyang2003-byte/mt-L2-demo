@@ -28,6 +28,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Megaphone, ChevronDown, LogOut, Clock } from "lucide-react";
 import PermissionGate from "@/components/PermissionGate";
+import { useBizLine } from "@/contexts/BizLineContext";
 
 const PRIMARY_COLOR = "#4080FF";
 
@@ -232,6 +233,29 @@ const PendingApprovalView = () => {
   );
 };
 
+/** 顶部业务线切换器：外卖 / 到餐 */
+const BizLineSwitcher = () => {
+  const { bizLine, changeBizLine, bizLineOptions } = useBizLine();
+  return (
+    <div className="flex items-center gap-1 bg-gray-100 rounded-lg p-1">
+      {bizLineOptions.map((opt) => (
+        <button
+          key={opt.value}
+          onClick={() => changeBizLine(opt.value)}
+          className={cn(
+            "px-3 py-1 rounded-md text-sm font-medium transition-colors",
+            bizLine === opt.value
+              ? "bg-white text-[#4080FF] shadow-sm"
+              : "text-gray-500 hover:text-gray-700"
+          )}
+        >
+          {opt.label}
+        </button>
+      ))}
+    </div>
+  );
+};
+
 const AdminLayout = () => {
   const { currentUser } = useUser();
 
@@ -244,7 +268,10 @@ const AdminLayout = () => {
       <Sidebar />
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-16 shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-6 sticky top-0 z-10">
-          <AppBreadcrumb />
+          <div className="flex items-center gap-4">
+            <AppBreadcrumb />
+            <BizLineSwitcher />
+          </div>
           <UserMenu />
         </header>
         <main className="flex-1 p-6">
