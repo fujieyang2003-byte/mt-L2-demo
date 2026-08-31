@@ -6,11 +6,14 @@
 
 ## 功能模块
 
-- **首页总览**：全局经营指标概览，实时掌握广告业务核心数据
-- **目标管理**：设定和跟踪广告收入、MR、RF 等核心目标
-- **激励测算**：广告激励政策的测算与模拟
-- **经营诊断**：多维度分析广告业务经营状况，支持智能诊断消息下发
+- **首页总览**：全局经营指标概览，支持区域/城市多维度下钻，AI 智能分析面板（打字机逐字效果）
+- **产品分析**：产品经营总览、区域透视、分客群分析、产品明细
+- **商家分析**：商家分层透视、商家分客群分析、商家明细，支持下钻到单个商家
+- **渠道分析**：区域/总商/城市/BD 四大视角透视，渠道年框看板
+- **多业务线切换**：外卖 / 到餐 / 闪购 / 医药四大业务线，顶部一键切换
 - **权限管理**：用户角色管理与权限审批
+
+全站配备苹果风格动效（页面切换、Tab 切换、级联淡入、按压反馈）与统一的 AI 智能分析面板。
 
 ## 角色体系
 
@@ -49,17 +52,18 @@ src/
 │   ├── ui/                 # shadcn/ui 基础组件
 │   └── PermissionGate.jsx  # 权限控制组件
 ├── config/
-│   └── menuConfig.js       # 菜单配置
+│   └── menuConfig.js       # 菜单配置（外卖/到餐/闪购/医药）
 ├── contexts/
+│   ├── BizLineContext.jsx  # 业务线切换上下文
 │   └── UserContext.jsx      # 用户认证上下文（Demo 模式）
 ├── layouts/
 │   └── AdminLayout.jsx      # 管理后台布局
 ├── pages/
-│   ├── BusinessDiagnosis.jsx   # 经营诊断
-│   ├── GoalManagement.jsx      # 目标管理
-│   ├── IncentiveCalculation.jsx # 激励测算
+│   ├── Overview*.jsx           # 首页总览（全局/区域/城市）
+│   ├── Product*.jsx            # 产品分析系列页面
+│   ├── Merchant*.jsx           # 商家分析系列页面
+│   ├── Channel*.jsx            # 渠道透视系列页面（含年框看板）
 │   ├── Login.jsx               # 登录页（角色选择）
-│   ├── Overview.jsx            # 首页总览
 │   └── PermissionManagement.jsx # 权限管理
 ├── App.jsx
 └── main.jsx

@@ -19,6 +19,7 @@ import {
   TrendingDown,
   Sparkles,
 } from "lucide-react";
+import { AiResultList } from "@/components/AiPanel";
 
 /* ================================================================== */
 /* 共享组件 & 工具                                                       */
@@ -262,10 +263,29 @@ const MerchantTierDrilldown = () => {
     return sum + (c.gtv.includes("亿") ? v * 10000 : v);
   }, 0);
   const totalAdMerchants = cities.reduce((sum, c) => sum + parseAmount(c.adMerchants), 0);
-  const avgMr = cities.length > 0 ? cities.reduce((s, c) => s + parseAmount(c.mr), 0) / cities.length : 0;
+const avgMr = cities.length > 0 ? cities.reduce((s, c) => s + parseAmount(c.mr), 0) / cities.length : 0;
 
-  return (
-    <div className="space-y-5">
+/* AI 分析条目（统一面板：默认第一条 + 展开其余） */
+const sortedByMr = [...cities].sort((a, b) => parseAmount(b.mr) - parseAmount(a.mr));
+const top = sortedByMr[0];
+const bottom = sortedByMr[sortedByMr.length - 1];
+const aiItems = [
+  {
+    title: `${pLevel}级 · ${rowLabel}×${colLabel}共覆盖${cities.length}个城市`,
+    text: `总收入${totalRevenue.toFixed(0)}万，总GTV${totalGtv >= 10000 ? `${(totalGtv / 10000).toFixed(1)}亿` : `${totalGtv.toFixed(0)}万`}，平均MR ${avgMr.toFixed(2)}%，广告商家${totalAdMerchants >= 10000 ? `${(totalAdMerchants / 10000).toFixed(1)}万` : totalAdMerchants}。${pLevel === "P0" ? "该层级为最高优先级商家，MR和ARPU显著高于均值，是核心收入贡献池。" : pLevel === "P3" ? "该层级为长尾商家，数量大但MR和ARPU偏低，是增量空间最大的群体。" : ""}`,
+  },
+  ...(cities.length > 0 && top ? [{
+    title: `${top.city}MR最高，标杆复制价值大`,
+    text: `${top.city}（${top.region}）MR ${top.mr}，收入${top.revenue}，ARPU ${top.arpu}，渗透率${top.penetration}。建议提炼其广告投放策略与运营经验，向同层级低MR城市推广。`,
+  }] : []),
+  ...(cities.length > 0 && bottom && bottom !== top ? [{
+    title: `${bottom.city}MR最低，待提升空间大`,
+    text: `${bottom.city}（${bottom.region}）MR仅${bottom.mr}，收入${bottom.revenue}，渗透率${bottom.penetration}。${pLevel === "P0" || pLevel === "P1" ? "作为高优层级，建议优先配置客户经理资源，推进品牌广告升级。" : "建议通过批量ROI优化、首充礼包和自动化营销批量触达，提升广告渗透。"}`,
+  }] : []),
+];
+
+return (
+<div className="space-y-5">
       {/* 返回 + 标题 */}
       <div className="flex items-center gap-3">
         <button
@@ -404,82 +424,29 @@ const MerchantTierDrilldown = () => {
         </Card>
       </div>
 
-      {/* AI 分析 */}
-      <Card className="border-none shadow-sm bg-white">
-        <CardHeader>
-          <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#4080FF]" />
-            AI 智能分析
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2.5">
-            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-              <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-                1
-              </span>
-              <div>
-                <p className="font-semibold text-gray-800 mb-0.5">
-                  {pLevel}级 · {rowLabel}×{colLabel}共覆盖{cities.length}个城市
-                </p>
-                <p className="leading-relaxed">
-                  总收入{totalRevenue.toFixed(0)}万，总GTV{totalGtv >= 10000 ? `${(totalGtv / 10000).toFixed(1)}亿` : `${totalGtv.toFixed(0)}万`}，
-                  平均MR {avgMr.toFixed(2)}%，广告商家{totalAdMerchants >= 10000 ? `${(totalAdMerchants / 10000).toFixed(1)}万` : totalAdMerchants}。
-                  {pLevel === "P0" && "该层级为最高优先级商家，MR和ARPU显著高于均值，是核心收入贡献池。"}
-                  {pLevel === "P3" && "该层级为长尾商家，数量大但MR和ARPU偏低，是增量空间最大的群体。"}
-                </p>
-              </div>
+      {/* AI 分析：统一默认第一条 + 苹果式展开 */}
+      <div className="mb-1">
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #faf5ff 0%, #f0e7ff 40%, #e8f0ff 100%)",
+            border: "1px solid #e9d5ff",
+          }}
+        >
+          <div className="flex items-center gap-2 px-5 pt-4 pb-1">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              <Sparkles className="w-4 h-4 text-white" />
             </div>
-            {cities.length > 0 && (
-              <>
-                {(() => {
-                  const sortedByMr = [...cities].sort(
-                    (a, b) => parseAmount(b.mr) - parseAmount(a.mr)
-                  );
-                  const top = sortedByMr[0];
-                  const bottom = sortedByMr[sortedByMr.length - 1];
-                  return (
-                    <>
-                      <div className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-                          2
-                        </span>
-                        <div>
-                          <p className="font-semibold text-gray-800 mb-0.5">
-                            {top.city}MR最高，标杆复制价值大
-                          </p>
-                          <p className="leading-relaxed">
-                            {top.city}（{top.region}）MR {top.mr}，收入{top.revenue}，
-                            ARPU {top.arpu}，渗透率{top.penetration}。
-                            建议提炼其广告投放策略与运营经验，向同层级低MR城市推广。
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-                        <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-                          3
-                        </span>
-                        <div>
-                          <p className="font-semibold text-gray-800 mb-0.5">
-                            {bottom.city}MR最低，待提升空间大
-                          </p>
-                          <p className="leading-relaxed">
-                            {bottom.city}（{bottom.region}）MR仅{bottom.mr}，收入{bottom.revenue}，
-                            渗透率{bottom.penetration}。
-                            {pLevel === "P0" || pLevel === "P1"
-                              ? "作为高优层级，建议优先配置客户经理资源，推进品牌广告升级。"
-                              : "建议通过批量ROI优化、首充礼包和自动化营销批量触达，提升广告渗透。"}
-                          </p>
-                        </div>
-                      </div>
-                    </>
-                  );
-                })()}
-              </>
-            )}
+            <h2 className="text-base font-bold text-gray-900">AI 智能分析</h2>
+            <span className="text-xs text-gray-400 font-normal ml-1">| {pLevel}级 · {rowLabel}×{colLabel}</span>
           </div>
-        </CardContent>
-      </Card>
+          <div className="mx-5 border-t border-purple-100/60" />
+          <AiResultList items={aiItems} />
+        </div>
+      </div>
     </div>
   );
 };

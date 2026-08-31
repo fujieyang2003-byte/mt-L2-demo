@@ -19,7 +19,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Gauge,
-  Sparkles,
   Target,
   ChevronRight,
   ArrowLeft,
@@ -29,6 +28,7 @@ import {
   Network,
   ExternalLink,
 } from "lucide-react";
+import AiAnalysisPanel from "@/components/AiAnalysisPanel";
 
 /* ================================================================== */
 /* 共享组件 & 工具                                                       */
@@ -50,32 +50,6 @@ const StatusBadge = ({ rate }) => {
   const status = getStatus(rate);
   return <Badge className={`border-none font-normal ${status.className}`}>{status.label}</Badge>;
 };
-
-const AiDiagnosisCard = ({ items }) => (
-  <Card className="border-none shadow-sm bg-white">
-    <CardHeader>
-      <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#4080FF]" />
-        AI 智能分析
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2.5">
-        {items.map((item, index) => (
-          <div key={index} className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-            <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-              {index + 1}
-            </span>
-            <div className="min-w-0">
-              {item.title && <p className="font-semibold text-gray-800 mb-0.5">{item.title}</p>}
-              <p className="leading-relaxed">{item.text || item}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
 
 const parseAmount = (value) => parseFloat(value.replace(/[^\d.]/g, "")) || 0;
 
@@ -130,18 +104,48 @@ const buildRow = (r) => {
 /* ================================================================== */
 const channelRegionRows = {
   waimai: [
-    { region: "华东区", partners: 12, cities: 4, target: "1,800万", achieved: "1,620万", rate: 90, gap: "180万", profitBase: "1,620万", profitRate: "1.8%", profitAmount: "29.2万", yoy: "+12.4%", monetization: "3.2%" },
-    { region: "华南区", partners: 10, cities: 3, target: "1,400万", achieved: "1,330万", rate: 95, gap: "70万", profitBase: "1,330万", profitRate: "1.8%", profitAmount: "23.9万", yoy: "+8.1%", monetization: "3.5%" },
-    { region: "华北区", partners: 8, cities: 3, target: "1,200万", achieved: "888万", rate: 74, gap: "312万", profitBase: "888万", profitRate: "1.2%", profitAmount: "10.7万", yoy: "-3.6%", monetization: "2.1%" },
-    { region: "西南区", partners: 6, cities: 3, target: "1,200万", achieved: "1,164万", rate: 97, gap: "36万", profitBase: "1,164万", profitRate: "1.8%", profitAmount: "21.0万", yoy: "+15.2%", monetization: "3.8%" },
-    { region: "东北区", partners: 6, cities: 3, target: "780万", achieved: "439万", rate: 56, gap: "341万", profitBase: "439万", profitRate: "1.0%", profitAmount: "4.4万", yoy: "-8.3%", monetization: "1.6%" },
+    { region: "京津冀区域", partners: 12, cities: 4, target: "1,800万", achieved: "1,620万", rate: 90, gap: "180万", profitBase: "1,620万", profitRate: "1.8%", profitAmount: "29.2万", yoy: "+12.4%", monetization: "3.2%" },
+    { region: "辽吉区域", partners: 6, cities: 3, target: "780万", achieved: "439万", rate: 56, gap: "341万", profitBase: "439万", profitRate: "1.0%", profitAmount: "4.4万", yoy: "-8.3%", monetization: "1.6%" },
+    { region: "山东区域", partners: 8, cities: 3, target: "1,200万", achieved: "1,056万", rate: 88, gap: "144万", profitBase: "1,056万", profitRate: "1.5%", profitAmount: "15.8万", yoy: "+6.7%", monetization: "2.8%" },
+    { region: "晋蒙区域", partners: 5, cities: 2, target: "500万", achieved: "445万", rate: 89, gap: "55万", profitBase: "445万", profitRate: "1.4%", profitAmount: "6.2万", yoy: "+4.2%", monetization: "2.5%" },
+    { region: "陕宁区域", partners: 5, cities: 2, target: "480万", achieved: "408万", rate: 85, gap: "72万", profitBase: "408万", profitRate: "1.3%", profitAmount: "5.3万", yoy: "+2.1%", monetization: "2.3%" },
+    { region: "甘青新区域", partners: 4, cities: 2, target: "360万", achieved: "281万", rate: 78, gap: "79万", profitBase: "281万", profitRate: "1.1%", profitAmount: "3.1万", yoy: "-1.5%", monetization: "1.9%" },
+    { region: "黑龙江区域", partners: 4, cities: 2, target: "320万", achieved: "218万", rate: 68, gap: "102万", profitBase: "218万", profitRate: "1.0%", profitAmount: "2.2万", yoy: "-4.8%", monetization: "1.7%" },
+    { region: "江苏区域", partners: 10, cities: 3, target: "1,400万", achieved: "1,330万", rate: 95, gap: "70万", profitBase: "1,330万", profitRate: "1.8%", profitAmount: "23.9万", yoy: "+8.1%", monetization: "3.5%" },
+    { region: "浙江区域", partners: 9, cities: 3, target: "1,100万", achieved: "1,012万", rate: 92, gap: "88万", profitBase: "1,012万", profitRate: "1.7%", profitAmount: "17.2万", yoy: "+7.5%", monetization: "3.3%" },
+    { region: "安徽区域", partners: 6, cities: 2, target: "600万", achieved: "552万", rate: 92, gap: "48万", profitBase: "552万", profitRate: "1.6%", profitAmount: "8.8万", yoy: "+5.8%", monetization: "3.0%" },
+    { region: "河南区域", partners: 7, cities: 3, target: "800万", achieved: "712万", rate: 89, gap: "88万", profitBase: "712万", profitRate: "1.5%", profitAmount: "10.7万", yoy: "+4.1%", monetization: "2.7%" },
+    { region: "湖北区域", partners: 6, cities: 2, target: "560万", achieved: "493万", rate: 88, gap: "67万", profitBase: "493万", profitRate: "1.4%", profitAmount: "6.9万", yoy: "+3.2%", monetization: "2.6%" },
+    { region: "湖南区域", partners: 5, cities: 2, target: "480万", achieved: "408万", rate: 85, gap: "72万", profitBase: "408万", profitRate: "1.3%", profitAmount: "5.3万", yoy: "+1.8%", monetization: "2.4%" },
+    { region: "江西区域", partners: 4, cities: 2, target: "360万", achieved: "302万", rate: 84, gap: "58万", profitBase: "302万", profitRate: "1.3%", profitAmount: "3.9万", yoy: "+0.5%", monetization: "2.2%" },
+    { region: "粤海区域", partners: 10, cities: 3, target: "1,200万", achieved: "1,164万", rate: 97, gap: "36万", profitBase: "1,164万", profitRate: "1.8%", profitAmount: "21.0万", yoy: "+15.2%", monetization: "3.8%" },
+    { region: "川藏区域", partners: 6, cities: 3, target: "1,200万", achieved: "1,092万", rate: 91, gap: "108万", profitBase: "1,092万", profitRate: "1.7%", profitAmount: "18.6万", yoy: "+9.6%", monetization: "3.4%" },
+    { region: "黔渝区域", partners: 5, cities: 2, target: "500万", achieved: "460万", rate: 92, gap: "40万", profitBase: "460万", profitRate: "1.6%", profitAmount: "7.4万", yoy: "+7.2%", monetization: "3.1%" },
+    { region: "福建区域", partners: 5, cities: 2, target: "480万", achieved: "437万", rate: 91, gap: "43万", profitBase: "437万", profitRate: "1.6%", profitAmount: "7.0万", yoy: "+6.0%", monetization: "3.0%" },
+    { region: "广西区域", partners: 4, cities: 2, target: "360万", achieved: "317万", rate: 88, gap: "43万", profitBase: "317万", profitRate: "1.4%", profitAmount: "4.4万", yoy: "+3.5%", monetization: "2.5%" },
+    { region: "云南区域", partners: 4, cities: 2, target: "320万", achieved: "256万", rate: 80, gap: "64万", profitBase: "256万", profitRate: "1.2%", profitAmount: "3.1万", yoy: "+1.2%", monetization: "2.0%" },
   ],
   daocan: [
-    { region: "华东区", partners: 10, cities: 3, target: "1,400万", achieved: "1,292万", rate: 92, gap: "108万", profitBase: "1,292万", profitRate: "1.6%", profitAmount: "20.7万", yoy: "+10.1%", monetization: "2.9%" },
-    { region: "华南区", partners: 8, cities: 3, target: "1,200万", achieved: "1,140万", rate: 95, gap: "60万", profitBase: "1,140万", profitRate: "1.6%", profitAmount: "18.2万", yoy: "+6.5%", monetization: "3.1%" },
-    { region: "华北区", partners: 7, cities: 3, target: "900万", achieved: "666万", rate: 74, gap: "234万", profitBase: "666万", profitRate: "1.0%", profitAmount: "6.7万", yoy: "-5.2%", monetization: "1.8%" },
-    { region: "西南区", partners: 5, cities: 2, target: "300万", achieved: "291万", rate: 97, gap: "9万", profitBase: "291万", profitRate: "1.6%", profitAmount: "4.7万", yoy: "+9.8%", monetization: "3.4%" },
-    { region: "东北区", partners: 5, cities: 3, target: "200万", achieved: "131万", rate: 66, gap: "69万", profitBase: "131万", profitRate: "0.8%", profitAmount: "1.0万", yoy: "-12.1%", monetization: "1.2%" },
+    { region: "京津冀区域", partners: 10, cities: 3, target: "1,400万", achieved: "1,292万", rate: 92, gap: "108万", profitBase: "1,292万", profitRate: "1.6%", profitAmount: "20.7万", yoy: "+10.1%", monetization: "2.9%" },
+    { region: "辽吉区域", partners: 5, cities: 3, target: "200万", achieved: "131万", rate: 66, gap: "69万", profitBase: "131万", profitRate: "0.8%", profitAmount: "1.0万", yoy: "-12.1%", monetization: "1.2%" },
+    { region: "山东区域", partners: 7, cities: 2, target: "700万", achieved: "623万", rate: 89, gap: "77万", profitBase: "623万", profitRate: "1.4%", profitAmount: "8.7万", yoy: "+5.2%", monetization: "2.6%" },
+    { region: "晋蒙区域", partners: 4, cities: 2, target: "360万", achieved: "313万", rate: 87, gap: "47万", profitBase: "313万", profitRate: "1.2%", profitAmount: "3.8万", yoy: "+2.8%", monetization: "2.2%" },
+    { region: "陕宁区域", partners: 4, cities: 2, target: "320万", achieved: "270万", rate: 84, gap: "50万", profitBase: "270万", profitRate: "1.1%", profitAmount: "3.0万", yoy: "+0.8%", monetization: "2.0%" },
+    { region: "甘青新区域", partners: 3, cities: 2, target: "240万", achieved: "184万", rate: 77, gap: "56万", profitBase: "184万", profitRate: "0.9%", profitAmount: "1.7万", yoy: "-2.5%", monetization: "1.5%" },
+    { region: "黑龙江区域", partners: 3, cities: 2, target: "200万", achieved: "132万", rate: 66, gap: "68万", profitBase: "132万", profitRate: "0.8%", profitAmount: "1.1万", yoy: "-6.0%", monetization: "1.3%" },
+    { region: "江苏区域", partners: 8, cities: 3, target: "1,200万", achieved: "1,140万", rate: 95, gap: "60万", profitBase: "1,140万", profitRate: "1.6%", profitAmount: "18.2万", yoy: "+6.5%", monetization: "3.1%" },
+    { region: "浙江区域", partners: 7, cities: 2, target: "900万", achieved: "828万", rate: 92, gap: "72万", profitBase: "828万", profitRate: "1.5%", profitAmount: "12.4万", yoy: "+5.8%", monetization: "2.8%" },
+    { region: "安徽区域", partners: 5, cities: 2, target: "480万", achieved: "437万", rate: 91, gap: "43万", profitBase: "437万", profitRate: "1.4%", profitAmount: "6.1万", yoy: "+4.2%", monetization: "2.6%" },
+    { region: "河南区域", partners: 5, cities: 2, target: "560万", achieved: "493万", rate: 88, gap: "67万", profitBase: "493万", profitRate: "1.3%", profitAmount: "6.4万", yoy: "+3.0%", monetization: "2.4%" },
+    { region: "湖北区域", partners: 4, cities: 2, target: "400万", achieved: "348万", rate: 87, gap: "52万", profitBase: "348万", profitRate: "1.2%", profitAmount: "4.2万", yoy: "+2.0%", monetization: "2.2%" },
+    { region: "湖南区域", partners: 4, cities: 2, target: "320万", achieved: "270万", rate: 84, gap: "50万", profitBase: "270万", profitRate: "1.1%", profitAmount: "3.0万", yoy: "+0.5%", monetization: "2.0%" },
+    { region: "江西区域", partners: 3, cities: 2, target: "240万", achieved: "198万", rate: 83, gap: "42万", profitBase: "198万", profitRate: "1.0%", profitAmount: "2.0万", yoy: "-0.5%", monetization: "1.8%" },
+    { region: "粤海区域", partners: 8, cities: 3, target: "1,200万", achieved: "732万", rate: 61, gap: "468万", profitBase: "732万", profitRate: "1.2%", profitAmount: "8.8万", yoy: "+2.5%", monetization: "2.0%" },
+    { region: "川藏区域", partners: 5, cities: 2, target: "300万", achieved: "291万", rate: 97, gap: "9万", profitBase: "291万", profitRate: "1.6%", profitAmount: "4.7万", yoy: "+9.8%", monetization: "3.4%" },
+    { region: "黔渝区域", partners: 4, cities: 2, target: "320万", achieved: "288万", rate: 90, gap: "32万", profitBase: "288万", profitRate: "1.4%", profitAmount: "4.0万", yoy: "+5.5%", monetization: "2.7%" },
+    { region: "福建区域", partners: 4, cities: 2, target: "300万", achieved: "270万", rate: 90, gap: "30万", profitBase: "270万", profitRate: "1.4%", profitAmount: "3.8万", yoy: "+4.2%", monetization: "2.6%" },
+    { region: "广西区域", partners: 3, cities: 2, target: "240万", achieved: "206万", rate: 86, gap: "34万", profitBase: "206万", profitRate: "1.2%", profitAmount: "2.5万", yoy: "+2.0%", monetization: "2.2%" },
+    { region: "云南区域", partners: 3, cities: 2, target: "200万", achieved: "150万", rate: 75, gap: "50万", profitBase: "150万", profitRate: "1.0%", profitAmount: "1.5万", yoy: "-1.0%", monetization: "1.6%" },
   ],
 };
 
@@ -150,57 +154,180 @@ const channelRegionRows = {
 /* ================================================================== */
 const cityDataRaw = {
   waimai: {
-    "华东区": [
-      { city: "上海", target: "600万", achieved: "540万", rate: 90, bdCount: 3, merchantCount: 1280, monetization: "3.5%", yoy: "+12.4%", profitAmount: "9.7万" },
-      { city: "杭州", target: "500万", achieved: "480万", rate: 96, bdCount: 2, merchantCount: 860, monetization: "3.2%", yoy: "+8.1%", profitAmount: "8.6万" },
-      { city: "南京", target: "400万", achieved: "360万", rate: 90, bdCount: 2, merchantCount: 620, monetization: "2.8%", yoy: "+6.5%", profitAmount: "6.5万" },
-      { city: "苏州", target: "300万", achieved: "240万", rate: 80, bdCount: 2, merchantCount: 480, monetization: "2.5%", yoy: "+4.2%", profitAmount: "4.3万" },
-    ],
-    "华南区": [
-      { city: "广州", target: "500万", achieved: "490万", rate: 98, bdCount: 2, merchantCount: 920, monetization: "3.8%", yoy: "+10.5%", profitAmount: "8.8万" },
-      { city: "深圳", target: "500万", achieved: "450万", rate: 90, bdCount: 2, merchantCount: 880, monetization: "2.1%", yoy: "+3.2%", profitAmount: "8.1万" },
-      { city: "厦门", target: "400万", achieved: "390万", rate: 98, bdCount: 2, merchantCount: 640, monetization: "3.0%", yoy: "+7.8%", profitAmount: "7.0万" },
-    ],
-    "华北区": [
+    "京津冀区域": [
       { city: "北京", target: "500万", achieved: "380万", rate: 76, bdCount: 3, merchantCount: 1020, monetization: "2.4%", yoy: "-3.6%", profitAmount: "4.6万" },
       { city: "天津", target: "400万", achieved: "280万", rate: 70, bdCount: 2, merchantCount: 560, monetization: "2.0%", yoy: "-5.2%", profitAmount: "3.4万" },
       { city: "石家庄", target: "300万", achieved: "228万", rate: 76, bdCount: 2, merchantCount: 420, monetization: "2.2%", yoy: "-2.1%", profitAmount: "2.7万" },
+      { city: "保定", target: "200万", achieved: "172万", rate: 86, bdCount: 1, merchantCount: 280, monetization: "2.6%", yoy: "+3.5%", profitAmount: "2.2万" },
     ],
-    "西南区": [
-      { city: "成都", target: "500万", achieved: "490万", rate: 98, bdCount: 2, merchantCount: 780, monetization: "3.6%", yoy: "+15.2%", profitAmount: "8.8万" },
-      { city: "重庆", target: "400万", achieved: "384万", rate: 96, bdCount: 2, merchantCount: 620, monetization: "3.4%", yoy: "+10.5%", profitAmount: "6.9万" },
-      { city: "昆明", target: "300万", achieved: "290万", rate: 97, bdCount: 2, merchantCount: 480, monetization: "3.2%", yoy: "+8.8%", profitAmount: "5.2万" },
-    ],
-    "东北区": [
+    "辽吉区域": [
       { city: "沈阳", target: "300万", achieved: "180万", rate: 60, bdCount: 2, merchantCount: 380, monetization: "1.6%", yoy: "-8.3%", profitAmount: "1.8万" },
       { city: "大连", target: "280万", achieved: "160万", rate: 57, bdCount: 2, merchantCount: 340, monetization: "1.5%", yoy: "-9.1%", profitAmount: "1.6万" },
-      { city: "长春", target: "200万", achieved: "99万", rate: 50, bdCount: 2, merchantCount: 260, monetization: "1.3%", yoy: "-12.0%", profitAmount: "1.0万" },
+      { city: "长春", target: "200万", achieved: "99万", rate: 50, bdCount: 1, merchantCount: 260, monetization: "1.3%", yoy: "-12.0%", profitAmount: "1.0万" },
+    ],
+    "山东区域": [
+      { city: "济南", target: "500万", achieved: "460万", rate: 92, bdCount: 2, merchantCount: 680, monetization: "3.0%", yoy: "+5.8%", profitAmount: "6.9万" },
+      { city: "青岛", target: "400万", achieved: "350万", rate: 88, bdCount: 2, merchantCount: 520, monetization: "2.7%", yoy: "+4.2%", profitAmount: "5.3万" },
+      { city: "烟台", target: "300万", achieved: "246万", rate: 82, bdCount: 1, merchantCount: 380, monetization: "2.3%", yoy: "+1.5%", profitAmount: "3.6万" },
+    ],
+    "晋蒙区域": [
+      { city: "太原", target: "300万", achieved: "270万", rate: 90, bdCount: 2, merchantCount: 420, monetization: "2.6%", yoy: "+3.8%", profitAmount: "3.8万" },
+      { city: "呼和浩特", target: "200万", achieved: "175万", rate: 88, bdCount: 1, merchantCount: 280, monetization: "2.3%", yoy: "+2.0%", profitAmount: "2.4万" },
+    ],
+    "陕宁区域": [
+      { city: "西安", target: "300万", achieved: "258万", rate: 86, bdCount: 2, merchantCount: 400, monetization: "2.5%", yoy: "+1.8%", profitAmount: "3.2万" },
+      { city: "银川", target: "180万", achieved: "150万", rate: 83, bdCount: 1, merchantCount: 220, monetization: "2.0%", yoy: "-0.5%", profitAmount: "2.1万" },
+    ],
+    "甘青新区域": [
+      { city: "兰州", target: "200万", achieved: "158万", rate: 79, bdCount: 1, merchantCount: 280, monetization: "2.0%", yoy: "-1.2%", profitAmount: "1.9万" },
+      { city: "乌鲁木齐", target: "160万", achieved: "123万", rate: 77, bdCount: 1, merchantCount: 200, monetization: "1.8%", yoy: "-2.8%", profitAmount: "1.2万" },
+    ],
+    "黑龙江区域": [
+      { city: "哈尔滨", target: "180万", achieved: "125万", rate: 69, bdCount: 1, merchantCount: 240, monetization: "1.8%", yoy: "-4.5%", profitAmount: "1.3万" },
+      { city: "齐齐哈尔", target: "140万", achieved: "93万", rate: 66, bdCount: 1, merchantCount: 180, monetization: "1.5%", yoy: "-6.2%", profitAmount: "0.9万" },
+    ],
+    "江苏区域": [
+      { city: "上海", target: "600万", achieved: "540万", rate: 90, bdCount: 3, merchantCount: 1280, monetization: "3.5%", yoy: "+12.4%", profitAmount: "9.7万" },
+      { city: "南京", target: "400万", achieved: "360万", rate: 90, bdCount: 2, merchantCount: 620, monetization: "2.8%", yoy: "+6.5%", profitAmount: "6.5万" },
+      { city: "苏州", target: "300万", achieved: "240万", rate: 80, bdCount: 1, merchantCount: 480, monetization: "2.5%", yoy: "+4.2%", profitAmount: "4.3万" },
+    ],
+    "浙江区域": [
+      { city: "杭州", target: "500万", achieved: "480万", rate: 96, bdCount: 2, merchantCount: 860, monetization: "3.2%", yoy: "+8.1%", profitAmount: "8.6万" },
+      { city: "宁波", target: "350万", achieved: "308万", rate: 88, bdCount: 1, merchantCount: 480, monetization: "2.7%", yoy: "+5.2%", profitAmount: "5.2万" },
+      { city: "温州", target: "250万", achieved: "224万", rate: 90, bdCount: 1, merchantCount: 380, monetization: "2.6%", yoy: "+4.0%", profitAmount: "3.4万" },
+    ],
+    "安徽区域": [
+      { city: "合肥", target: "350万", achieved: "322万", rate: 92, bdCount: 2, merchantCount: 520, monetization: "2.8%", yoy: "+5.2%", profitAmount: "5.0万" },
+      { city: "芜湖", target: "250万", achieved: "230万", rate: 92, bdCount: 1, merchantCount: 340, monetization: "2.5%", yoy: "+3.8%", profitAmount: "3.8万" },
+    ],
+    "河南区域": [
+      { city: "郑州", target: "350万", achieved: "312万", rate: 89, bdCount: 2, merchantCount: 580, monetization: "2.7%", yoy: "+4.5%", profitAmount: "4.8万" },
+      { city: "洛阳", target: "250万", achieved: "218万", rate: 87, bdCount: 1, merchantCount: 360, monetization: "2.4%", yoy: "+2.8%", profitAmount: "3.3万" },
+      { city: "开封", target: "200万", achieved: "182万", rate: 91, bdCount: 1, merchantCount: 280, monetization: "2.5%", yoy: "+3.2%", profitAmount: "2.6万" },
+    ],
+    "湖北区域": [
+      { city: "武汉", target: "350万", achieved: "305万", rate: 87, bdCount: 2, merchantCount: 560, monetization: "2.6%", yoy: "+3.5%", profitAmount: "4.5万" },
+      { city: "宜昌", target: "210万", achieved: "188万", rate: 90, bdCount: 1, merchantCount: 320, monetization: "2.4%", yoy: "+2.0%", profitAmount: "2.4万" },
+    ],
+    "湖南区域": [
+      { city: "长沙", target: "300万", achieved: "255万", rate: 85, bdCount: 2, merchantCount: 480, monetization: "2.5%", yoy: "+2.2%", profitAmount: "3.5万" },
+      { city: "株洲", target: "180万", achieved: "153万", rate: 85, bdCount: 1, merchantCount: 280, monetization: "2.2%", yoy: "+0.8%", profitAmount: "1.8万" },
+    ],
+    "江西区域": [
+      { city: "南昌", target: "220万", achieved: "185万", rate: 84, bdCount: 1, merchantCount: 340, monetization: "2.2%", yoy: "+0.5%", profitAmount: "2.4万" },
+      { city: "赣州", target: "140万", achieved: "117万", rate: 84, bdCount: 1, merchantCount: 220, monetization: "2.0%", yoy: "-0.8%", profitAmount: "1.5万" },
+    ],
+    "粤海区域": [
+      { city: "广州", target: "500万", achieved: "490万", rate: 98, bdCount: 2, merchantCount: 920, monetization: "3.8%", yoy: "+10.5%", profitAmount: "8.8万" },
+      { city: "深圳", target: "500万", achieved: "450万", rate: 90, bdCount: 2, merchantCount: 880, monetization: "2.1%", yoy: "+3.2%", profitAmount: "8.1万" },
+      { city: "佛山", target: "200万", achieved: "224万", rate: 112, bdCount: 1, merchantCount: 360, monetization: "3.0%", yoy: "+8.5%", profitAmount: "4.1万" },
+    ],
+    "川藏区域": [
+      { city: "成都", target: "500万", achieved: "490万", rate: 98, bdCount: 2, merchantCount: 780, monetization: "3.6%", yoy: "+15.2%", profitAmount: "8.8万" },
+      { city: "拉萨", target: "200万", achieved: "182万", rate: 91, bdCount: 1, merchantCount: 220, monetization: "2.6%", yoy: "+5.0%", profitAmount: "2.6万" },
+      { city: "绵阳", target: "200万", achieved: "180万", rate: 90, bdCount: 1, merchantCount: 280, monetization: "2.5%", yoy: "+3.8%", profitAmount: "2.5万" },
+    ],
+    "黔渝区域": [
+      { city: "重庆", target: "300万", achieved: "288万", rate: 96, bdCount: 2, merchantCount: 520, monetization: "3.2%", yoy: "+8.0%", profitAmount: "5.2万" },
+      { city: "贵阳", target: "200万", achieved: "172万", rate: 86, bdCount: 1, merchantCount: 340, monetization: "2.5%", yoy: "+3.2%", profitAmount: "2.2万" },
+    ],
+    "福建区域": [
+      { city: "福州", target: "260万", achieved: "240万", rate: 92, bdCount: 1, merchantCount: 420, monetization: "2.8%", yoy: "+5.5%", profitAmount: "3.8万" },
+      { city: "厦门", target: "220万", achieved: "197万", rate: 90, bdCount: 1, merchantCount: 340, monetization: "2.6%", yoy: "+4.2%", profitAmount: "3.2万" },
+    ],
+    "广西区域": [
+      { city: "南宁", target: "200万", achieved: "178万", rate: 89, bdCount: 1, merchantCount: 320, monetization: "2.4%", yoy: "+3.0%", profitAmount: "2.5万" },
+      { city: "柳州", target: "160万", achieved: "139万", rate: 87, bdCount: 1, merchantCount: 240, monetization: "2.1%", yoy: "+1.5%", profitAmount: "1.9万" },
+    ],
+    "云南区域": [
+      { city: "昆明", target: "180万", achieved: "146万", rate: 81, bdCount: 1, merchantCount: 300, monetization: "2.1%", yoy: "+1.2%", profitAmount: "1.9万" },
+      { city: "大理", target: "140万", achieved: "110万", rate: 79, bdCount: 1, merchantCount: 200, monetization: "1.9%", yoy: "-0.5%", profitAmount: "1.2万" },
     ],
   },
   daocan: {
-    "华东区": [
-      { city: "上海", target: "500万", achieved: "470万", rate: 94, bdCount: 2, merchantCount: 620, monetization: "3.1%", yoy: "+9.6%", profitAmount: "7.5万" },
-      { city: "杭州", target: "500万", achieved: "450万", rate: 90, bdCount: 2, merchantCount: 580, monetization: "2.8%", yoy: "+6.2%", profitAmount: "7.2万" },
-      { city: "南京", target: "400万", achieved: "372万", rate: 93, bdCount: 2, merchantCount: 440, monetization: "2.5%", yoy: "+4.8%", profitAmount: "6.0万" },
-    ],
-    "华南区": [
-      { city: "广州", target: "500万", achieved: "480万", rate: 96, bdCount: 2, merchantCount: 560, monetization: "3.3%", yoy: "+8.5%", profitAmount: "7.7万" },
-      { city: "深圳", target: "400万", achieved: "380万", rate: 95, bdCount: 2, merchantCount: 440, monetization: "2.6%", yoy: "+5.1%", profitAmount: "6.1万" },
-      { city: "厦门", target: "300万", achieved: "280万", rate: 93, bdCount: 2, merchantCount: 320, monetization: "2.2%", yoy: "+3.8%", profitAmount: "4.4万" },
-    ],
-    "华北区": [
+    "京津冀区域": [
       { city: "北京", target: "400万", achieved: "290万", rate: 73, bdCount: 2, merchantCount: 480, monetization: "2.0%", yoy: "-5.1%", profitAmount: "2.9万" },
       { city: "天津", target: "300万", achieved: "210万", rate: 70, bdCount: 2, merchantCount: 320, monetization: "1.7%", yoy: "-6.3%", profitAmount: "2.1万" },
       { city: "石家庄", target: "200万", achieved: "166万", rate: 83, bdCount: 1, merchantCount: 240, monetization: "1.9%", yoy: "-1.8%", profitAmount: "1.7万" },
     ],
-    "西南区": [
-      { city: "成都", target: "200万", achieved: "195万", rate: 98, bdCount: 1, merchantCount: 280, monetization: "3.4%", yoy: "+10.8%", profitAmount: "3.1万" },
-      { city: "重庆", target: "100万", achieved: "96万", rate: 96, bdCount: 1, merchantCount: 180, monetization: "3.1%", yoy: "+7.5%", profitAmount: "1.6万" },
-    ],
-    "东北区": [
+    "辽吉区域": [
       { city: "沈阳", target: "100万", achieved: "68万", rate: 68, bdCount: 1, merchantCount: 120, monetization: "1.2%", yoy: "-10.5%", profitAmount: "0.5万" },
       { city: "大连", target: "60万", achieved: "38万", rate: 63, bdCount: 1, merchantCount: 80, monetization: "1.0%", yoy: "-12.8%", profitAmount: "0.3万" },
       { city: "长春", target: "40万", achieved: "25万", rate: 63, bdCount: 1, merchantCount: 60, monetization: "0.9%", yoy: "-14.2%", profitAmount: "0.2万" },
+    ],
+    "山东区域": [
+      { city: "济南", target: "400万", achieved: "360万", rate: 90, bdCount: 2, merchantCount: 380, monetization: "2.6%", yoy: "+4.8%", profitAmount: "4.6万" },
+      { city: "青岛", target: "300万", achieved: "263万", rate: 88, bdCount: 1, merchantCount: 280, monetization: "2.4%", yoy: "+3.2%", profitAmount: "3.5万" },
+    ],
+    "晋蒙区域": [
+      { city: "太原", target: "200万", achieved: "175万", rate: 88, bdCount: 1, merchantCount: 240, monetization: "2.1%", yoy: "+2.5%", profitAmount: "2.2万" },
+      { city: "呼和浩特", target: "160万", achieved: "138万", rate: 86, bdCount: 1, merchantCount: 180, monetization: "1.9%", yoy: "+1.0%", profitAmount: "1.6万" },
+    ],
+    "陕宁区域": [
+      { city: "西安", target: "200万", achieved: "168万", rate: 84, bdCount: 1, merchantCount: 260, monetization: "2.0%", yoy: "+0.5%", profitAmount: "2.0万" },
+      { city: "银川", target: "120万", achieved: "102万", rate: 85, bdCount: 1, merchantCount: 140, monetization: "1.8%", yoy: "-0.8%", profitAmount: "1.0万" },
+    ],
+    "甘青新区域": [
+      { city: "兰州", target: "140万", achieved: "108万", rate: 77, bdCount: 1, merchantCount: 160, monetization: "1.6%", yoy: "-2.2%", profitAmount: "1.0万" },
+      { city: "乌鲁木齐", target: "100万", achieved: "76万", rate: 76, bdCount: 1, merchantCount: 120, monetization: "1.4%", yoy: "-3.5%", profitAmount: "0.7万" },
+    ],
+    "黑龙江区域": [
+      { city: "哈尔滨", target: "120万", achieved: "80万", rate: 67, bdCount: 1, merchantCount: 140, monetization: "1.4%", yoy: "-5.5%", profitAmount: "0.7万" },
+      { city: "齐齐哈尔", target: "80万", achieved: "52万", rate: 65, bdCount: 1, merchantCount: 100, monetization: "1.2%", yoy: "-7.0%", profitAmount: "0.4万" },
+    ],
+    "江苏区域": [
+      { city: "上海", target: "500万", achieved: "470万", rate: 94, bdCount: 2, merchantCount: 620, monetization: "3.1%", yoy: "+9.6%", profitAmount: "7.5万" },
+      { city: "南京", target: "400万", achieved: "372万", rate: 93, bdCount: 2, merchantCount: 440, monetization: "2.5%", yoy: "+4.8%", profitAmount: "6.0万" },
+      { city: "苏州", target: "300万", achieved: "298万", rate: 99, bdCount: 1, merchantCount: 380, monetization: "2.8%", yoy: "+6.0%", profitAmount: "4.7万" },
+    ],
+    "浙江区域": [
+      { city: "杭州", target: "500万", achieved: "450万", rate: 90, bdCount: 2, merchantCount: 580, monetization: "2.8%", yoy: "+6.2%", profitAmount: "7.2万" },
+      { city: "宁波", target: "250万", achieved: "230万", rate: 92, bdCount: 1, merchantCount: 320, monetization: "2.5%", yoy: "+4.0%", profitAmount: "3.4万" },
+    ],
+    "安徽区域": [
+      { city: "合肥", target: "260万", achieved: "238万", rate: 92, bdCount: 1, merchantCount: 340, monetization: "2.5%", yoy: "+3.8%", profitAmount: "3.5万" },
+      { city: "芜湖", target: "220万", achieved: "199万", rate: 91, bdCount: 1, merchantCount: 260, monetization: "2.3%", yoy: "+2.8%", profitAmount: "2.6万" },
+    ],
+    "河南区域": [
+      { city: "郑州", target: "260万", achieved: "230万", rate: 88, bdCount: 1, merchantCount: 380, monetization: "2.3%", yoy: "+2.8%", profitAmount: "3.0万" },
+      { city: "洛阳", target: "180万", achieved: "158万", rate: 88, bdCount: 1, merchantCount: 240, monetization: "2.1%", yoy: "+1.5%", profitAmount: "2.0万" },
+    ],
+    "湖北区域": [
+      { city: "武汉", target: "240万", achieved: "210万", rate: 88, bdCount: 1, merchantCount: 340, monetization: "2.2%", yoy: "+2.0%", profitAmount: "2.6万" },
+      { city: "宜昌", target: "160万", achieved: "138万", rate: 86, bdCount: 1, merchantCount: 200, monetization: "2.0%", yoy: "+0.8%", profitAmount: "1.6万" },
+    ],
+    "湖南区域": [
+      { city: "长沙", target: "180万", achieved: "150万", rate: 83, bdCount: 1, merchantCount: 300, monetization: "2.0%", yoy: "+0.2%", profitAmount: "2.0万" },
+      { city: "株洲", target: "140万", achieved: "120万", rate: 86, bdCount: 1, merchantCount: 180, monetization: "1.9%", yoy: "+1.0%", profitAmount: "1.4万" },
+    ],
+    "江西区域": [
+      { city: "南昌", target: "140万", achieved: "116万", rate: 83, bdCount: 1, merchantCount: 200, monetization: "1.8%", yoy: "-0.5%", profitAmount: "1.3万" },
+      { city: "赣州", target: "100万", achieved: "82万", rate: 82, bdCount: 1, merchantCount: 140, monetization: "1.6%", yoy: "-1.2%", profitAmount: "0.8万" },
+    ],
+    "粤海区域": [
+      { city: "广州", target: "500万", achieved: "480万", rate: 96, bdCount: 2, merchantCount: 560, monetization: "3.3%", yoy: "+8.5%", profitAmount: "7.7万" },
+      { city: "深圳", target: "400万", achieved: "380万", rate: 95, bdCount: 2, merchantCount: 440, monetization: "2.6%", yoy: "+5.1%", profitAmount: "6.1万" },
+      { city: "佛山", target: "300万", achieved: "252万", rate: 84, bdCount: 1, merchantCount: 280, monetization: "2.2%", yoy: "+1.0%", profitAmount: "3.0万" },
+    ],
+    "川藏区域": [
+      { city: "成都", target: "200万", achieved: "195万", rate: 98, bdCount: 1, merchantCount: 280, monetization: "3.4%", yoy: "+10.8%", profitAmount: "3.1万" },
+      { city: "拉萨", target: "100万", achieved: "96万", rate: 96, bdCount: 1, merchantCount: 100, monetization: "2.8%", yoy: "+6.0%", profitAmount: "1.4万" },
+    ],
+    "黔渝区域": [
+      { city: "重庆", target: "200万", achieved: "180万", rate: 90, bdCount: 1, merchantCount: 280, monetization: "2.6%", yoy: "+4.5%", profitAmount: "2.6万" },
+      { city: "贵阳", target: "120万", achieved: "108万", rate: 90, bdCount: 1, merchantCount: 160, monetization: "2.2%", yoy: "+2.5%", profitAmount: "1.4万" },
+    ],
+    "福建区域": [
+      { city: "福州", target: "160万", achieved: "144万", rate: 90, bdCount: 1, merchantCount: 240, monetization: "2.4%", yoy: "+3.5%", profitAmount: "2.0万" },
+      { city: "厦门", target: "140万", achieved: "126万", rate: 90, bdCount: 1, merchantCount: 200, monetization: "2.2%", yoy: "+2.8%", profitAmount: "1.8万" },
+    ],
+    "广西区域": [
+      { city: "南宁", target: "140万", achieved: "120万", rate: 86, bdCount: 1, merchantCount: 180, monetization: "2.0%", yoy: "+1.8%", profitAmount: "1.5万" },
+      { city: "柳州", target: "100万", achieved: "86万", rate: 86, bdCount: 1, merchantCount: 140, monetization: "1.8%", yoy: "+0.5%", profitAmount: "1.0万" },
+    ],
+    "云南区域": [
+      { city: "昆明", target: "120万", achieved: "90万", rate: 75, bdCount: 1, merchantCount: 180, monetization: "1.7%", yoy: "-1.0%", profitAmount: "1.0万" },
+      { city: "大理", target: "80万", achieved: "60万", rate: 75, bdCount: 1, merchantCount: 100, monetization: "1.5%", yoy: "-2.5%", profitAmount: "0.5万" },
     ],
   },
 };
@@ -261,6 +388,58 @@ const bdDataRaw = {
       { name: "施莹", mis: "shiying24", stores: 3, target: "160万", achieved: "120万", rate: 75, merchantCount: 220 },
       { name: "张鹏", mis: "zhangpeng25", stores: 3, target: "140万", achieved: "108万", rate: 77, merchantCount: 200 },
     ],
+    "保定": [
+      { name: "方圆", mis: "fangyuan40", stores: 3, target: "100万", achieved: "86万", rate: 86, merchantCount: 160 },
+      { name: "毛明", mis: "maoming41", stores: 2, target: "100万", achieved: "86万", rate: 86, merchantCount: 140 },
+    ],
+    "济南": [
+      { name: "梁伟", mis: "liangwei42", stores: 5, target: "260万", achieved: "240万", rate: 92, merchantCount: 380 },
+      { name: "卢月", mis: "luyue43", stores: 4, target: "240万", achieved: "220万", rate: 92, merchantCount: 340 },
+    ],
+    "青岛": [
+      { name: "尹杰", mis: "yinjie44", stores: 4, target: "220万", achieved: "195万", rate: 89, merchantCount: 300 },
+      { name: "覃亮", mis: "qinliang45", stores: 3, target: "180万", achieved: "155万", rate: 86, merchantCount: 260 },
+    ],
+    "郑州": [
+      { name: "洪亮", mis: "hongliang46", stores: 4, target: "200万", achieved: "178万", rate: 89, merchantCount: 320 },
+      { name: "石辉", mis: "shihui47", stores: 3, target: "150万", achieved: "134万", rate: 89, merchantCount: 280 },
+    ],
+    "武汉": [
+      { name: "夏雪", mis: "xiaxue48", stores: 4, target: "200万", achieved: "175万", rate: 88, merchantCount: 310 },
+      { name: "裴勇", mis: "peiyong49", stores: 3, target: "150万", achieved: "130万", rate: 87, merchantCount: 250 },
+    ],
+    "长沙": [
+      { name: "关宇", mis: "guanyu50", stores: 3, target: "180万", achieved: "153万", rate: 85, merchantCount: 270 },
+      { name: "柯达", mis: "keda51", stores: 2, target: "120万", achieved: "102万", rate: 85, merchantCount: 210 },
+    ],
+    "合肥": [
+      { name: "涂明", mis: "tuming52", stores: 3, target: "200万", achieved: "184万", rate: 92, merchantCount: 290 },
+      { name: "余静", mis: "yujing53", stores: 2, target: "150万", achieved: "138万", rate: 92, merchantCount: 230 },
+    ],
+    "太原": [
+      { name: "昌林", mis: "changlin54", stores: 3, target: "180万", achieved: "162万", rate: 90, merchantCount: 240 },
+      { name: "姚笑", mis: "yaoxiao55", stores: 2, target: "120万", achieved: "108万", rate: 90, merchantCount: 180 },
+    ],
+    "西安": [
+      { name: "湛清", mis: "zhanqing56", stores: 3, target: "180万", achieved: "155万", rate: 86, merchantCount: 230 },
+      { name: "项飞", mis: "xiangfei57", stores: 2, target: "120万", achieved: "103万", rate: 86, merchantCount: 170 },
+    ],
+    "福州": [
+      { name: "傅博", mis: "fubo58", stores: 3, target: "150万", achieved: "138万", rate: 92, merchantCount: 240 },
+      { name: "庄雅", mis: "zhuangya59", stores: 2, target: "110万", achieved: "102万", rate: 93, merchantCount: 180 },
+    ],
+    "南宁": [
+      { name: "聂雷", mis: "nielei60", stores: 3, target: "120万", achieved: "107万", rate: 89, merchantCount: 180 },
+      { name: "司瀚", mis: "sihan61", stores: 2, target: "80万", achieved: "71万", rate: 89, merchantCount: 140 },
+    ],
+    "昆明": [
+      { name: "金鑫", mis: "jinxin30", stores: 3, target: "160万", achieved: "155万", rate: 97, merchantCount: 260 },
+      { name: "魏涛", mis: "weitao31", stores: 3, target: "140万", achieved: "135万", rate: 96, merchantCount: 220 },
+    ],
+    "哈尔滨": [
+      { name: "费霞", mis: "feixia62", stores: 2, target: "100万", achieved: "70万", rate: 70, merchantCount: 150 },
+      { name: "凌峰", mis: "lingfeng63", stores: 2, target: "80万", achieved: "55万", rate: 69, merchantCount: 120 },
+    ],
     "成都": [
       { name: "孔明", mis: "kongming26", stores: 5, target: "260万", achieved: "255万", rate: 98, merchantCount: 420 },
       { name: "曹颖", mis: "caoying27", stores: 4, target: "240万", achieved: "235万", rate: 98, merchantCount: 360 },
@@ -268,10 +447,6 @@ const bdDataRaw = {
     "重庆": [
       { name: "严浩", mis: "yanhao28", stores: 4, target: "200万", achieved: "192万", rate: 96, merchantCount: 340 },
       { name: "华蓉", mis: "huarong29", stores: 3, target: "200万", achieved: "192万", rate: 96, merchantCount: 280 },
-    ],
-    "昆明": [
-      { name: "金鑫", mis: "jinxin30", stores: 3, target: "160万", achieved: "155万", rate: 97, merchantCount: 260 },
-      { name: "魏涛", mis: "weitao31", stores: 3, target: "140万", achieved: "135万", rate: 96, merchantCount: 220 },
     ],
     "沈阳": [
       { name: "陶宇", mis: "taoyu32", stores: 3, target: "160万", achieved: "95万", rate: 59, merchantCount: 200 },
@@ -337,6 +512,49 @@ const bdDataRaw = {
     "长春": [
       { name: "邹磊", mis: "zoulei36", stores: 1, target: "40万", achieved: "25万", rate: 63, merchantCount: 60 },
     ],
+    "济南": [
+      { name: "梁伟", mis: "liangwei42", stores: 3, target: "200万", achieved: "180万", rate: 90, merchantCount: 220 },
+      { name: "卢月", mis: "luyue43", stores: 2, target: "200万", achieved: "180万", rate: 90, merchantCount: 200 },
+    ],
+    "青岛": [
+      { name: "尹杰", mis: "yinjie44", stores: 2, target: "180万", achieved: "158万", rate: 88, merchantCount: 180 },
+      { name: "覃亮", mis: "qinliang45", stores: 2, target: "120万", achieved: "105万", rate: 88, merchantCount: 140 },
+    ],
+    "郑州": [
+      { name: "洪亮", mis: "hongliang46", stores: 2, target: "150万", achieved: "132万", rate: 88, merchantCount: 200 },
+      { name: "石辉", mis: "shihui47", stores: 2, target: "110万", achieved: "98万", rate: 89, merchantCount: 160 },
+    ],
+    "武汉": [
+      { name: "夏雪", mis: "xiaxue48", stores: 2, target: "140万", achieved: "123万", rate: 88, merchantCount: 190 },
+      { name: "裴勇", mis: "peiyong49", stores: 2, target: "100万", achieved: "87万", rate: 87, merchantCount: 150 },
+    ],
+    "长沙": [
+      { name: "关宇", mis: "guanyu50", stores: 2, target: "100万", achieved: "83万", rate: 83, merchantCount: 170 },
+      { name: "柯达", mis: "keda51", stores: 1, target: "80万", achieved: "67万", rate: 84, merchantCount: 120 },
+    ],
+    "合肥": [
+      { name: "涂明", mis: "tuming52", stores: 2, target: "150万", achieved: "138万", rate: 92, merchantCount: 200 },
+      { name: "余静", mis: "yujing53", stores: 1, target: "110万", achieved: "100万", rate: 91, merchantCount: 140 },
+    ],
+    "苏州": [
+      { name: "冯蕾", mis: "fenglei64", stores: 2, target: "160万", achieved: "158万", rate: 99, merchantCount: 220 },
+      { name: "褚洋", mis: "chuyang65", stores: 1, target: "140万", achieved: "140万", rate: 100, merchantCount: 180 },
+    ],
+    "佛山": [
+      { name: "卫涛", mis: "weitao13", stores: 2, target: "160万", achieved: "135万", rate: 84, merchantCount: 160 },
+    ],
+    "拉萨": [
+      { name: "旦增", mis: "danzeng66", stores: 1, target: "60万", achieved: "58万", rate: 97, merchantCount: 60 },
+    ],
+    "贵阳": [
+      { name: "黔明", mis: "qianming67", stores: 1, target: "80万", achieved: "72万", rate: 90, merchantCount: 100 },
+    ],
+    "福州": [
+      { name: "傅博", mis: "fubo58", stores: 1, target: "90万", achieved: "81万", rate: 90, merchantCount: 140 },
+    ],
+    "南昌": [
+      { name: "赣生", mis: "gansheng68", stores: 1, target: "80万", achieved: "66万", rate: 83, merchantCount: 120 },
+    ],
   },
 };
 
@@ -354,57 +572,51 @@ for (const biz of Object.keys(bdDataRaw)) {
 /* ================================================================== */
 const aiRegionData = {
   waimai: {
-    "华东区": [
-      { title: "区域整体表现优秀", text: "华东区整体达成率90%，4个城市中3个达成率超90%。上海90%和杭州96%表现突出，建议提炼杭州经验复制到苏州（达成率80%为区域内最低）。" },
-      { title: "苏州货币化率偏低", text: "苏州达成率80%但货币化率2.5%，低于区域内均值3.2%。建议重点排查苏州合作商的广告投放结构，引导尾部商家开通信息流广告。" },
-      { title: "同比增长亮点", text: "上海YoY+12.4%增速领先，华东区域整体YoY+8.1%远超全国均值，经营态势良好。" },
+    "京津冀区域": [
+      { title: "区域整体表现", text: "京津冀区域整体达成率90%，北京达成率76%为区域内最低，建议配置专项资源提升北京合作商执行力。" },
+      { title: "同比环比下滑", text: "北京YoY-3.6%、天津YoY-5.2%，同比为负增长。建议重点排查合作商执行力和商户覆盖情况。" },
+      { title: "保定表现亮眼", text: "保定达成率86%+YoY+3.5%为区域内唯一正增长城市，建议提炼经验。" },
     ],
-    "华南区": [
-      { title: "区域整体表现优秀", text: "华南区整体达成率95%，3个城市中2个达成率超95%。广州98%和厦门98%表现突出。" },
-      { title: "深圳货币化率偏低", text: "深圳达成率90%但货币化率仅2.1%，低于区域内均值3.0%。建议重点排查深圳合作商的广告投放结构。" },
-      { title: "厦门经验值得推广", text: "厦门达成率98%+货币化率3.0%，是华南区的标杆城市。" },
+    "辽吉区域": [
+      { title: "区域整体达成率偏低", text: "辽吉区域整体达成率56%为全国最低，3个城市全部达成率低于65%，长春仅50%。" },
+      { title: "同比环比持续下滑", text: "沈阳YoY-8.3%、大连YoY-9.1%、长春YoY-12.0%，整体同比为负增长。" },
+      { title: "建议紧急调配资源", text: "辽吉区域需紧急调配资源支持，重点排查合作商执行力和商户覆盖情况。" },
     ],
-    "华北区": [
-      { title: "区域整体达成率偏低", text: "华北区整体达成率74%远低于全国均值85%。3个城市中全部达成率低于80%，天津仅70%为区域内最差。" },
-      { title: "同比环比持续下滑", text: "北京YoY-3.6%、天津YoY-5.2%，华北区域整体同比为负增长。建议重点排查合作商执行力和商户覆盖情况。" },
-      { title: "北京需重点突破", text: "北京作为核心城市达成率仅76%，货币化率2.4%。建议配置专项资源。" },
+    "江苏区域": [
+      { title: "区域整体表现优秀", text: "江苏区域整体达成率95%，上海90%和苏州80%表现稳健。建议提炼上海经验复制到苏州。" },
+      { title: "同比增长亮点", text: "上海YoY+12.4%增速领先，江苏区域整体YoY+8.1%远超全国均值。" },
     ],
-    "西南区": [
-      { title: "区域表现优异", text: "西南区整体达成率97%为全国最高，3个城市全部达成率超96%。成都98%和昆明97%持续高增长。" },
-      { title: "同比增长强劲", text: "成都YoY+15.2%为全国增速最快城市，西南区是标杆区域。" },
-      { title: "货币化率领先", text: "区域内平均货币化率3.4%，远高于全国均值2.8%。建议提炼经验向其他区域推广。" },
+    "粤海区域": [
+      { title: "区域整体表现优秀", text: "粤海区域整体达成率97%，广州98%和佛山112%表现突出。" },
+      { title: "深圳货币化率偏低", text: "深圳达成率90%但货币化率仅2.1%，建议重点排查深圳合作商的广告投放结构。" },
     ],
-    "东北区": [
-      { title: "区域整体达成率偏低", text: "东北区整体达成率56%为全国最低，3个城市中全部达成率低于65%，长春仅50%为全国最差。" },
-      { title: "同比环比持续下滑", text: "沈阳YoY-8.3%、大连YoY-9.1%、长春YoY-12.0%，东北区域整体同比为负增长。" },
-      { title: "建议紧急调配资源", text: "东北区需紧急调配资源支持，重点排查合作商执行力和商户覆盖情况。" },
+    "川藏区域": [
+      { title: "区域表现优异", text: "川藏区域整体达成率91%，成都98%持续高增长。" },
+      { title: "同比增长强劲", text: "成都YoY+15.2%为全国增速最快城市，建议增加BD编制扩大覆盖。" },
     ],
   },
   daocan: {
-    "华东区": [
-      { title: "区域整体表现良好", text: "华东区整体达成率93%，3个城市全部达成率超90%。上海94%和南京93%表现稳健。" },
-      { title: "同比增长稳定", text: "上海YoY+9.6%、杭州YoY+6.2%，华东区域整体同比正增长。" },
-      { title: "杭州经验推广", text: "杭州达成率90%且货币化率稳定，建议提炼到餐运营经验向华北推广。" },
-    ],
-    "华南区": [
-      { title: "区域整体表现优秀", text: "华南区整体达成率95%，3个城市全部达成率超93%。广州96%为区域内最优。" },
-      { title: "同比增长稳定", text: "广州YoY+8.5%和厦门YoY+3.8%，华南区域整体同比正增长。" },
-      { title: "深圳经验推广", text: "深圳货币化率2.6%在到餐中表现良好，建议向华北区域推广。" },
-    ],
-    "华北区": [
-      { title: "区域整体达成率偏低", text: "华北区整体达成率74%远低于全国均值76%。主要拖累来自天津（70%）。" },
-      { title: "同比环比下滑", text: "北京YoY-5.1%、天津YoY-6.3%，华北区域整体同比为负增长。" },
+    "京津冀区域": [
+      { title: "区域整体达成率偏低", text: "京津冀区域整体达成率73%，主要拖累来自天津（70%）。" },
+      { title: "同比环比下滑", text: "北京YoY-5.1%、天津YoY-6.3%，整体同比为负增长。" },
       { title: "北京需重点突破", text: "北京达成率73%，建议配置专项资源推动到餐品牌广告覆盖。" },
     ],
-    "西南区": [
-      { title: "区域表现优异", text: "西南区整体达成率97%，2个城市全部达成率超96%。成都98%持续高增长。" },
-      { title: "同比增长强劲", text: "成都YoY+10.8%增速领先全国到餐，西南区是标杆区域。" },
-      { title: "货币化率领先", text: "区域内平均货币化率3.3%，远高于到餐全国均值2.5%。" },
-    ],
-    "东北区": [
-      { title: "区域整体达成率最低", text: "东北区整体达成率63%为全国最低，3个城市全部达成率低于70%。" },
+    "辽吉区域": [
+      { title: "区域整体达成率最低", text: "辽吉区域整体达成率63%为全国最低，3个城市全部达成率低于70%。" },
       { title: "同比环比严重下滑", text: "沈阳YoY-10.5%、大连YoY-12.8%、长春YoY-14.2%。" },
-      { title: "需紧急关注", text: "东北区到餐业务需紧急调配资源，建议排查合作商执行力。" },
+      { title: "需紧急关注", text: "辽吉区域到餐业务需紧急调配资源，建议排查合作商执行力。" },
+    ],
+    "江苏区域": [
+      { title: "区域整体表现良好", text: "江苏区域整体达成率95%，3个城市全部达成率超90%。上海94%和苏州99%表现稳健。" },
+      { title: "同比增长稳定", text: "上海YoY+9.6%，江苏区域整体同比正增长。" },
+    ],
+    "粤海区域": [
+      { title: "区域整体表现优秀", text: "粤海区域整体达成率95%，广州96%为区域内最优。" },
+      { title: "同比增长稳定", text: "广州YoY+8.5%，粤海区域整体同比正增长。" },
+    ],
+    "川藏区域": [
+      { title: "区域表现优异", text: "川藏区域整体达成率97%，成都98%持续高增长。" },
+      { title: "同比增长强劲", text: "成都YoY+10.8%增速领先全国到餐。" },
     ],
   },
 };
@@ -497,8 +709,14 @@ const RegionTrackingDetail = ({ regionRow, cityList, aiItems, regionName }) => {
     navigate(`/channel/region/${encodeURIComponent(regionName)}/city/${encodeURIComponent(cityName)}`);
   };
 
+  const aiModules = [
+    { key: "city", label: "城市达成", items: aiItems },
+    { key: "bd", label: "BD下钻", items: aiItems },
+  ];
+
   return (
     <div className="space-y-4">
+      <AiAnalysisPanel modules={aiModules} subtitle={`选择板块，让 AI 帮你解读${regionName}数据`} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <SummaryCard label="区域目标值" value={regionRow.target} icon={Target} color="text-blue-600" bg="bg-blue-50" />
         <SummaryCard label="实际完成值" value={regionRow.achieved} icon={CheckCircle2} color="text-emerald-600" bg="bg-emerald-50" />
@@ -594,8 +812,6 @@ const RegionTrackingDetail = ({ regionRow, cityList, aiItems, regionName }) => {
           </div>
         </CardContent>
       </Card>
-
-      <AiDiagnosisCard items={aiItems} />
     </div>
   );
 };
@@ -614,8 +830,14 @@ const CityTrackingDetail = ({ cityName, bdList, aiItems }) => {
     ? Math.round(bdList.reduce((s, b) => s + parseInt(b.mrRate), 0) / bdList.length)
     : 0;
 
+  const aiModules = [
+    { key: "bd", label: "BD达成", items: aiItems },
+    { key: "store", label: "门店下钻", items: aiItems },
+  ];
+
   return (
     <div className="space-y-4">
+      <AiAnalysisPanel modules={aiModules} subtitle={`选择板块，让 AI 帮你解读${cityName}数据`} />
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         <SummaryCard label="城市目标值" value={`${totalTarget.toFixed(0)}万`} icon={Target} color="text-blue-600" bg="bg-blue-50" />
         <SummaryCard label="实际完成值" value={`${totalAchieved.toFixed(0)}万`} icon={CheckCircle2} color="text-emerald-600" bg="bg-emerald-50" />
@@ -699,8 +921,6 @@ const CityTrackingDetail = ({ cityName, bdList, aiItems }) => {
           </div>
         </CardContent>
       </Card>
-
-      <AiDiagnosisCard items={aiItems} />
     </div>
   );
 };

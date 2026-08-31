@@ -1,11 +1,17 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useUser } from "@/contexts/UserContext";
 import { useBizLine } from "@/contexts/BizLineContext";
-import PageHeader from "@/components/dashboard/PageHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -26,7 +32,10 @@ import {
   TrendingUp,
   TrendingDown,
   ExternalLink,
+  ChevronRight,
 } from "lucide-react";
+import { AiResultList } from "@/components/AiPanel";
+import AiAnalysisPanel from "@/components/AiAnalysisPanel";
 
 /* ================================================================== */
 /* P 级别配色                                                           */
@@ -211,25 +220,6 @@ const SegmentationMatrix = ({ data }) => {
 /* ================================================================== */
 /* AI 智能分析卡片                                                       */
 /* ================================================================== */
-const AiDiagnosisCard = ({ items }) => (
-  <Card className="border-none shadow-sm bg-white">
-    <CardContent className="pt-5">
-      <div className="space-y-2.5">
-        {items.map((item, index) => (
-          <div key={index} className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-            <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-              {index + 1}
-            </span>
-            <div className="min-w-0">
-              {item.title && <p className="font-semibold text-gray-800 mb-0.5">{item.title}</p>}
-              <p className="leading-relaxed">{item.text || item}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
 
 /* ================================================================== */
 /* ====== PLATFORM_ADMIN: 全国数据（保持不变） ======                   */
@@ -693,22 +683,329 @@ const bdAiItems = {
 /* ====== 视图组件 ======                                               */
 /* ================================================================== */
 
-/* ---- 平台管理员视图（保持原有逻辑不变） ---- */
+/* 20个真实区域 */
+const REGIONS = [
+  "京津冀区域", "辽吉区域", "山东区域", "晋蒙区域", "陕宁区域", "甘青新区域", "黑龙江区域",
+  "江苏区域", "浙江区域", "安徽区域", "河南区域", "湖北区域", "湖南区域", "江西区域",
+  "粤海区域", "川藏区域", "黔渝区域", "福建区域", "广西区域", "云南区域",
+];
+
+/* 区域 → 城市映射 */
+const REGION_CITY_MAP = {
+  "京津冀区域": ["北京", "天津", "石家庄", "唐山", "保定", "廊坊", "邯郸", "秦皇岛"],
+  "辽吉区域": ["沈阳", "大连", "长春", "吉林", "鞍山", "抚顺", "锦州", "延吉"],
+  "山东区域": ["济南", "青岛", "烟台", "潍坊", "临沂", "淄博", "威海", "济宁"],
+  "晋蒙区域": ["太原", "大同", "呼和浩特", "包头", "临汾", "长治", "鄂尔多斯", "赤峰"],
+  "陕宁区域": ["西安", "宝鸡", "咸阳", "渭南", "银川", "榆林", "汉中", "吴忠"],
+  "甘青新区域": ["兰州", "西宁", "乌鲁木齐", "天水", "酒泉", "克拉玛依", "张掖", "哈密"],
+  "黑龙江区域": ["哈尔滨", "齐齐哈尔", "大庆", "牡丹江", "佳木斯", "绥化", "黑河", "鹤岗"],
+  "江苏区域": ["南京", "苏州", "无锡", "常州", "南通", "徐州", "扬州", "盐城"],
+  "浙江区域": ["杭州", "宁波", "温州", "绍兴", "嘉兴", "金华", "台州", "湖州"],
+  "安徽区域": ["合肥", "芜湖", "蚌埠", "阜阳", "安庆", "马鞍山", "滁州", "宿州"],
+  "河南区域": ["郑州", "洛阳", "开封", "新乡", "南阳", "信阳", "安阳", "许昌"],
+  "湖北区域": ["武汉", "宜昌", "襄阳", "荆州", "黄冈", "十堰", "孝感", "黄石"],
+  "湖南区域": ["长沙", "株洲", "湘潭", "衡阳", "岳阳", "常德", "郴州", "益阳"],
+  "江西区域": ["南昌", "赣州", "九江", "上饶", "宜春", "吉安", "抚州", "景德镇"],
+  "粤海区域": ["广州", "深圳", "东莞", "佛山", "珠海", "中山", "海口", "三亚"],
+  "川藏区域": ["成都", "绵阳", "德阳", "宜宾", "南充", "拉萨", "乐山", "自贡"],
+  "黔渝区域": ["重庆", "贵阳", "遵义", "六盘水", "毕节", "铜仁", "安顺", "凯里"],
+  "福建区域": ["福州", "厦门", "泉州", "莆田", "漳州", "宁德", "龙岩", "三明"],
+  "广西区域": ["南宁", "柳州", "桂林", "梧州", "北海", "玉林", "百色", "钦州"],
+  "云南区域": ["昆明", "大理", "曲靖", "红河", "玉溪", "楚雄", "文山", "保山"],
+};
+
+/* 城市 → BD/运营映射（每个城市有若干BD） */
+const CITY_BD_MAP = {
+  "北京": [
+    { name: "张伟", mis: "zhangwei01", area: "朝阳/东城" },
+    { name: "李娜", mis: "lina02", area: "海淀/西城" },
+    { name: "王强", mis: "wangqiang03", area: "丰台/石景山" },
+  ],
+  "天津": [
+    { name: "赵磊", mis: "zhaolei01", area: "和平/南开" },
+    { name: "孙丽", mis: "sunli02", area: "河北/河东" },
+  ],
+  "上海": [
+    { name: "刘洋", mis: "liuyang04", area: "浦东/黄浦" },
+    { name: "王芳", mis: "wangfang02", area: "徐汇/长宁" },
+    { name: "陈刚", mis: "chengang03", area: "静安/普陀" },
+  ],
+  "杭州": [
+    { name: "周明", mis: "zhouming01", area: "西湖/上城" },
+    { name: "吴芳", mis: "wufang02", area: "滨江/萧山" },
+    { name: "郑浩", mis: "zhenghao03", area: "余杭/临平" },
+  ],
+  "南京": [
+    { name: "黄磊", mis: "huanglei01", area: "鼓楼/玄武" },
+    { name: "林雪", mis: "linxue02", area: "建邺/雨花台" },
+  ],
+  "苏州": [
+    { name: "徐刚", mis: "xugang01", area: "姑苏/工业园" },
+    { name: "何静", mis: "hejing02", area: "吴中/相城" },
+  ],
+  "广州": [
+    { name: "罗勇", mis: "luoyong01", area: "天河/越秀" },
+    { name: "梁芳", mis: "liangfang02", area: "海珠/番禺" },
+    { name: "谢明", mis: "xieming03", area: "白云/花都" },
+  ],
+  "深圳": [
+    { name: "唐辉", mis: "tanghui01", area: "南山/福田" },
+    { name: "覃丽", mis: "qinli02", area: "罗湖/龙华" },
+    { name: "龙刚", mis: "longgang03", area: "宝安/光明" },
+  ],
+};
+
+/* 获取某个城市下的BD列表，如果无专属数据则生成默认BD */
+const getBdListByCity = (city) => {
+  if (CITY_BD_MAP[city]) return CITY_BD_MAP[city];
+  return [
+    { name: "待分配BD-1", mis: "bd001", area: `${city}核心商圈` },
+    { name: "待分配BD-2", mis: "bd002", area: `${city}普通商圈` },
+  ];
+};
+
+/* ---- 平台管理员视图（支持全国/区域/城市/BD切换） ---- */
 const PlatformAdminView = () => {
   const { bizLine } = useBizLine();
+  const [selectedRegion, setSelectedRegion] = useState("全国");
+  const [selectedCity, setSelectedCity] = useState("全部城市");
+  const [selectedBd, setSelectedBd] = useState("全部BD/运营");
+
+  /* AI 智能分析：三个级联下拉 + 触发按钮 */
+  const [aiScope, setAiScope] = useState("全国");
+  const [aiCitySize, setAiCitySize] = useState("all");
+  const [aiMerchantType, setAiMerchantType] = useState("all");
+  const [aiTriggered, setAiTriggered] = useState(true);
+
   const summaryStats = summaryStatsMap[bizLine] || summaryStatsMap.waimai;
   const matrixData = matrixDataMap[bizLine] || matrixDataMap.waimai;
+  const regionMatrix = regionMatrixDataMap[bizLine] || regionMatrixDataMap.waimai;
+  const regionStats = regionStatsMap[bizLine] || regionStatsMap.waimai;
+  const cityRows = cityBreakdownData[bizLine] || cityBreakdownData.waimai;
+
+  const isNational = selectedRegion === "全国";
+  const isAllCities = selectedCity === "全部城市";
+  const isAllBds = selectedBd === "全部BD/运营";
+
+  const cityList = !isNational ? (REGION_CITY_MAP[selectedRegion] || []) : [];
+  const bdList = !isNational && !isAllCities ? getBdListByCity(selectedCity) : [];
+
+  const handleRegionChange = (val) => {
+    setSelectedRegion(val);
+    setSelectedCity("全部城市");
+    setSelectedBd("全部BD/运营");
+  };
+  const handleCityChange = (val) => {
+    setSelectedCity(val);
+    setSelectedBd("全部BD/运营");
+  };
+
+  const activeStats = isNational ? summaryStats : regionStats;
+  const activeMatrix = isNational ? matrixData : regionMatrix;
+
+  /* 构建标题文案 */
+  const scopeTitle = (() => {
+    if (isNational) return "全国核心指标";
+    let t = selectedRegion;
+    if (!isAllCities) t += ` · ${selectedCity}`;
+    if (!isAllBds) t += ` · ${selectedBd}`;
+    return t + "核心指标";
+  })();
+
+  /* AI 分析：城市体量选项（来自矩阵列） */
+  const aiCitySizeOptions = [
+    { value: "all", label: "所有城市" },
+    ...activeMatrix.columns.map((c) => ({ value: c.id, label: c.label })),
+  ];
+
+  /* AI 分析：商家类型选项（来自矩阵行） */
+  const aiMerchantTypeOptions = [
+    { value: "all", label: "全部商家" },
+    ...activeMatrix.rows.map((r) => ({ value: r.id, label: r.label })),
+  ];
+
+  /* AI 分析：区域选项 */
+  const aiScopeOptions = ["全国", ...Object.keys(REGION_CITY_MAP)];
+
+  /* 根据三个下拉的选择组合，生成分析内容 */
+  const aiAnalysisItems = (() => {
+    const scopeLabel = aiScope === "全国" ? "全国" : aiScope;
+    const citySizeLabel = aiCitySizeOptions.find((o) => o.value === aiCitySize)?.label || "所有城市";
+    const merchantLabel = aiMerchantTypeOptions.find((o) => o.value === aiMerchantType)?.label || "全部商家";
+
+    /* 筛选匹配的矩阵行 */
+    const matchedRows = activeMatrix.rows.filter(
+      (r) => aiMerchantType === "all" || r.id === aiMerchantType
+    );
+
+    /* 筛选匹配的矩阵列 */
+    const matchedCols = activeMatrix.columns.filter(
+      (c) => aiCitySize === "all" || c.id === aiCitySize
+    );
+
+    const items = [];
+
+    matchedRows.forEach((row) => {
+      if (aiCitySize === "all") {
+        /* 全部城市体量 — 展示行级汇总 */
+        if (row.rowSummary) {
+          const merchantNote = row.rowSummary.find((s) => s.label === "门店")?.value || "";
+          const gtvShare = row.rowSummary.find((s) => s.label === "GTV占比")?.value || "";
+          const revenueShare = row.rowSummary.find((s) => s.label === "收入占比")?.value || "";
+          items.push({
+            title: `${row.label}（${scopeLabel} · ${citySizeLabel}）`,
+            text: `${row.label}共${merchantNote}门店，GTV占比${gtvShare}，收入占比${revenueShare}。${row.filter ? "筛选条件：" + row.filter + "。" : ""}建议持续优化该层级商家的广告渗透率与货币化率，挖掘增量收入空间。`,
+          });
+        } else if (row.fullSpan && row.cells[0]) {
+          const c = row.cells[0];
+          items.push({
+            title: `${row.label}（${scopeLabel} · ${citySizeLabel}）`,
+            text: `${row.label}共${c.merchantNote}门店，GTV占比${c.gtvShare}，广告商家${c.adMerchants}，收入占比${c.revenueShare}，MR ${c.mr}。${row.filter ? "筛选条件：" + row.filter + "。" : ""}建议针对该群体制定专项策略，提升广告效果。`,
+          });
+        }
+      } else {
+        /* 特定城市体量 — 展示单元格级数据 */
+        matchedCols.forEach((col) => {
+          const cellIdx = activeMatrix.columns.findIndex((c) => c.id === col.id);
+          const cell = row.cells[cellIdx];
+          if (cell) {
+            items.push({
+              title: `${row.label} × ${col.label}（${scopeLabel}）`,
+              text: `${row.label}在${col.label}共${cell.merchantNote}门店，GTV占比${cell.gtvShare}，广告商家${cell.adMerchants}，收入占比${cell.revenueShare}，MR ${cell.mr}。${cell.filter ? "筛选条件：" + cell.filter + "。" : ""}建议根据该群体特征调整投放策略与资源配置。`,
+            });
+          }
+        });
+      }
+    });
+
+    /* 如果没有匹配到具体数据，展示默认 aiItems */
+    if (items.length === 0 && activeMatrix.aiItems) {
+      activeMatrix.aiItems.forEach((item) => items.push(item));
+    }
+
+    return items;
+  })();
 
   return (
     <div className="space-y-5">
+      {/* AI 智能分析 — 三级下拉 */}
+      <div className="mb-5">
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #faf5ff 0%, #f0e7ff 40%, #e8f0ff 100%)",
+            border: "1px solid #e9d5ff",
+          }}
+        >
+          {/* 标题行 */}
+          <div className="flex items-center gap-2 px-5 pt-4 pb-1">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-base font-bold text-gray-900">AI 智能分析</h2>
+            <span className="text-xs text-gray-400 font-normal ml-1">| 选择视角、城市体量与商家类型，让 AI 解读分层</span>
+          </div>
+
+          {/* 三个下拉选择器 + 分析按钮 */}
+          <div className="flex items-center gap-3 px-5 py-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">视角范围</span>
+              <Select
+                value={aiScope}
+                onValueChange={(v) => {
+                  setAiScope(v);
+                  setAiCitySize("all");
+                  setAiMerchantType("all");
+                  setAiTriggered(false);
+                }}
+              >
+                <SelectTrigger className="w-[130px] h-8 text-xs bg-white/80">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {aiScopeOptions.map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">城市体量</span>
+              <Select
+                value={aiCitySize}
+                onValueChange={(v) => {
+                  setAiCitySize(v);
+                  setAiTriggered(false);
+                }}
+              >
+                <SelectTrigger className="w-[140px] h-8 text-xs bg-white/80">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {aiCitySizeOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">商家类型</span>
+              <Select
+                value={aiMerchantType}
+                onValueChange={(v) => {
+                  setAiMerchantType(v);
+                  setAiTriggered(false);
+                }}
+              >
+                <SelectTrigger className="w-[130px] h-8 text-xs bg-white/80">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {aiMerchantTypeOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <button
+              onClick={() => setAiTriggered(true)}
+              className="flex items-center gap-1 h-8 px-4 rounded-lg text-xs font-medium text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              开始分析
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* 分割线 */}
+          <div className="mx-5 border-t border-purple-100/60" />
+
+          {/* 分析结果：统一默认第一条 + 苹果式展开 */}
+          {!aiTriggered ? (
+            <div className="flex items-center justify-center py-6 text-sm text-gray-400 nk-stagger">
+              请选择维度后点击「开始分析」
+            </div>
+          ) : (
+            <AiResultList items={aiAnalysisItems} />
+          )}
+        </div>
+      </div>
+
       {/* 汇总指标 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700">核心指标</h2>
+          <h2 className="text-sm font-semibold text-gray-700">{scopeTitle}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {summaryStats.map((stat) => {
+          {activeStats.map((stat) => {
             const Icon = stat.icon;
             return (
               <Card key={stat.label} className="border-none shadow-sm bg-white">
@@ -731,20 +1028,111 @@ const PlatformAdminView = () => {
 
       {/* 2D 分层矩阵 */}
       <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Grid3x3 className="w-3.5 h-3.5 text-[#4080FF]" />
-            {matrixData.title}
-          </h2>
-          <Badge className="bg-gray-50 text-gray-500 border-none font-normal ml-1">{matrixData.totalLabel}</Badge>
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
+            <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
+              <Grid3x3 className="w-3.5 h-3.5 text-[#4080FF]" />
+              {activeMatrix.title}
+            </h2>
+            <Badge className="bg-gray-50 text-gray-500 border-none font-normal ml-1">{activeMatrix.totalLabel}</Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-semibold text-gray-700 whitespace-nowrap">视角范围</span>
+            <Select value={selectedRegion} onValueChange={handleRegionChange}>
+              <SelectTrigger className="w-40 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全国">全国</SelectItem>
+                {REGIONS.map((r) => (
+                  <SelectItem key={r} value={r}>{r}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedCity}
+              onValueChange={handleCityChange}
+              disabled={isNational}
+            >
+              <SelectTrigger className="w-32 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全部城市">全部城市</SelectItem>
+                {cityList.map((c) => (
+                  <SelectItem key={c} value={c}>{c}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Select
+              value={selectedBd}
+              onValueChange={setSelectedBd}
+              disabled={isNational || isAllCities}
+            >
+              <SelectTrigger className="w-36 h-9">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="全部BD/运营">全部BD/运营</SelectItem>
+                {bdList.map((bd) => (
+                  <SelectItem key={bd.mis} value={bd.name}>{bd.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Card className="border-none shadow-sm bg-white">
           <CardContent className="pt-5">
-            <SegmentationMatrix data={matrixData} />
+            <SegmentationMatrix data={activeMatrix} />
           </CardContent>
         </Card>
       </div>
+
+      {/* 区域模式下显示城市分层明细 */}
+      {!isNational && (
+        <div>
+          <div className="flex items-center gap-2 mb-3">
+            <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
+            <h2 className="text-sm font-semibold text-gray-700">{!isAllCities ? `${selectedCity} · BD绩效明细` : `${selectedRegion} · 城市分层明细`}</h2>
+          </div>
+          <Card className="border-none shadow-sm bg-white">
+            <CardContent className="pt-5">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>城市</TableHead>
+                    <TableHead>广告商户数</TableHead>
+                    <TableHead>渗透率</TableHead>
+                    <TableHead>GTV</TableHead>
+                    <TableHead>广告收入</TableHead>
+                    <TableHead>货币化率</TableHead>
+                    <TableHead className="w-32">达成率</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {cityRows.map((row) => (
+                    <TableRow key={row.city}>
+                      <TableCell className="font-medium text-gray-800">{row.city}</TableCell>
+                      <TableCell>{row.adMerchants.toLocaleString()}</TableCell>
+                      <TableCell>{row.penetration}</TableCell>
+                      <TableCell>{row.gtv}</TableCell>
+                      <TableCell className="font-medium">{row.revenue}</TableCell>
+                      <TableCell>{row.mr}</TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          <Progress value={Math.min(row.rate, 100)} className="h-2 flex-1" />
+                          <span className="text-xs text-gray-500 w-10 shrink-0">{row.rate}%</span>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* 筛选条件说明 */}
       <div>
@@ -821,37 +1209,31 @@ const PlatformAdminView = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* AI 智能分析 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#4080FF]" />
-            AI 智能分析
-          </h2>
-        </div>
-        <AiDiagnosisCard items={matrixData.aiItems} />
-      </div>
     </div>
   );
 };
 
-/* ---- 业务经理视图（华东区） ---- */
+/* ---- 业务经理视图（江苏区域） ---- */
 const BizManagerView = () => {
   const { bizLine } = useBizLine();
   const stats = regionStatsMap[bizLine] || regionStatsMap.waimai;
   const matrixData = regionMatrixDataMap[bizLine] || regionMatrixDataMap.waimai;
   const cityRows = cityBreakdownData[bizLine] || cityBreakdownData.waimai;
 
+  const aiModules = [
+    { key: "region", label: "区域分层", items: matrixData.aiItems },
+    { key: "city", label: "城市拆解", items: matrixData.aiItems },
+  ];
+
   return (
     <div className="space-y-5">
+      <AiAnalysisPanel modules={aiModules} subtitle="选择板块，让 AI 帮你解读区域商家分层" />
       {/* 汇总指标 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
           <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700">华东区核心指标</h2>
-          <Badge className="bg-blue-50 text-blue-600 border-none font-normal">华东区</Badge>
+          <h2 className="text-sm font-semibold text-gray-700">江苏区域核心指标</h2>
+          <Badge className="bg-blue-50 text-blue-600 border-none font-normal">江苏区域</Badge>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {stats.map((stat) => {
@@ -937,18 +1319,6 @@ const BizManagerView = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* AI 智能分析 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#4080FF]" />
-            AI 智能分析
-          </h2>
-        </div>
-        <AiDiagnosisCard items={matrixData.aiItems} />
-      </div>
     </div>
   );
 };
@@ -960,8 +1330,14 @@ const PartnerView = () => {
   const matrixData = cityMatrixDataMap[bizLine] || cityMatrixDataMap.waimai;
   const bdRows = bdPerformanceData[bizLine] || bdPerformanceData.waimai;
 
+  const aiModules = [
+    { key: "city", label: "城市分层", items: matrixData.aiItems },
+    { key: "bd", label: "BD绩效", items: matrixData.aiItems },
+  ];
+
   return (
     <div className="space-y-5">
+      <AiAnalysisPanel modules={aiModules} subtitle="选择板块，让 AI 帮你解读城市商家分层" />
       {/* 汇总指标 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -1057,18 +1433,6 @@ const PartnerView = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* AI 智能分析 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#4080FF]" />
-            AI 智能分析
-          </h2>
-        </div>
-        <AiDiagnosisCard items={matrixData.aiItems} />
-      </div>
     </div>
   );
 };
@@ -1087,8 +1451,14 @@ const BdView = () => {
   }, {});
   const adCount = stores.filter((s) => s.adStatus === "已投广").length;
 
+  const aiModules = [
+    { key: "tier", label: "门店分层", items: aiItems },
+    { key: "ad", label: "广告渗透", items: aiItems },
+  ];
+
   return (
     <div className="space-y-5">
+      <AiAnalysisPanel modules={aiModules} subtitle="选择板块，让 AI 帮你解读门店分层" />
       {/* 个人统计卡片 */}
       <div>
         <div className="flex items-center gap-2 mb-3">
@@ -1197,18 +1567,6 @@ const BdView = () => {
           </CardContent>
         </Card>
       </div>
-
-      {/* AI 智能分析 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#4080FF]" />
-            AI 智能分析
-          </h2>
-        </div>
-        <AiDiagnosisCard items={aiItems} />
-      </div>
     </div>
   );
 };
@@ -1220,17 +1578,8 @@ const MerchantTierAnalysis = () => {
   const { currentUser } = useUser();
   const role = currentUser?.role || "platform_admin";
 
-  const headerConfig = {
-    platform_admin: { title: "商家", description: "基于商户GTV、城市体量、新老店等维度进行二维交叉分层，提供差异化经营策略" },
-    biz_manager: { title: "商家", description: "华东区商家分层视图，按城市体量与新老店维度交叉分析，支持下辖城市钻取" },
-    partner: { title: "商家", description: "上海城市商家分层视图，按商圈体量与新老店维度交叉分析，含BD管辖明细" },
-    bd: { title: "商家", description: "个人管辖门店分层视图，按GTV分层分类管理，聚焦广告渗透与收入提升" },
-  };
-  const header = headerConfig[role] || headerConfig.platform_admin;
-
   return (
     <div className="space-y-5">
-      <PageHeader title={header.title} description={header.description} />
       {role === "platform_admin" && <PlatformAdminView />}
       {role === "biz_manager" && <BizManagerView />}
       {role === "partner" && <PartnerView />}

@@ -29,6 +29,7 @@ import {
   Network,
   ExternalLink,
 } from "lucide-react";
+import AiPanel from "@/components/AiPanel";
 
 /* ================================================================== */
 /* 共享组件                                                             */
@@ -51,31 +52,6 @@ const StatusBadge = ({ rate }) => {
   return <Badge className={`border-none font-normal ${status.className}`}>{status.label}</Badge>;
 };
 
-const AiDiagnosisCard = ({ items }) => (
-  <Card className="border-none shadow-sm bg-white">
-    <CardHeader>
-      <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#4080FF]" />
-        AI 智能分析
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2.5">
-        {items.map((item, index) => (
-          <div key={index} className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-            <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-              {index + 1}
-            </span>
-            <div className="min-w-0">
-              {item.title && <p className="font-semibold text-gray-800 mb-0.5">{item.title}</p>}
-              <p className="leading-relaxed">{item.text || item}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
 
 const parseAmount = (value) => parseFloat(value.replace(/[^\d.]/g, "")) || 0;
 
@@ -632,7 +608,7 @@ const PartnerDetail = () => {
         </Card>
       )}
 
-      <AiDiagnosisCard items={aiItems} />
+      <AiPanel items={aiItems} />
     </div>
   );
 };

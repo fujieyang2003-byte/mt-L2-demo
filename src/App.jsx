@@ -9,6 +9,7 @@ import Login from "@/pages/Login";
 import ChannelDetail from "@/pages/ChannelDetail";
 import PartnerDetail from "@/pages/PartnerDetail";
 import MerchantTierDrilldown from "@/pages/MerchantTierDrilldown";
+import BizLineRouteWrapper from "@/components/BizLineRouteWrapper";
 import { navItems } from "./nav-items";
 
 const queryClient = new QueryClient();
@@ -30,23 +31,32 @@ const AppRoutes = () => {
         {navItems.map(({ to, page }) => (
           <Route key={to} path={to} element={page} />
         ))}
-        {/* 渠道透视详情页：区域 → 城市 */}
-        <Route path="/channel/region/:regionName" element={<ChannelDetail />} />
-        {/* 渠道透视详情页：城市 → BD */}
-        <Route path="/channel/region/:regionName/city/:cityName" element={<ChannelDetail />} />
-        {/* 总商透视详情页 */}
-        <Route path="/channel/partner/:partnerName" element={<PartnerDetail />} />
-        {/* 总商透视：城市 → BD */}
-        <Route path="/channel/partner/:partnerName/city/:cityName" element={<PartnerDetail />} />
-        {/* 商家分层透视详情页 */}
-        <Route path="/merchant/drilldown" element={<MerchantTierDrilldown />} />
-        {/* 兼容旧路由重定向 */}
-        <Route path="/goal-incentive" element={<Navigate to="/channel" replace />} />
-        <Route path="/product-segmentation" element={<Navigate to="/product" replace />} />
-        <Route path="/merchant-tier-analysis" element={<Navigate to="/merchant" replace />} />
-        <Route path="/business-diagnosis" element={<Navigate to="/channel" replace />} />
-        <Route path="/incentive-calculation" element={<Navigate to="/channel" replace />} />
-        <Route path="/goal-management" element={<Navigate to="/channel" replace />} />
+
+        {/* 渠道/商家透视动态路由 */}
+        <Route path="/channel/region/:regionName" element={<BizLineRouteWrapper><ChannelDetail /></BizLineRouteWrapper>} />
+        <Route path="/channel/region/:regionName/city/:cityName" element={<BizLineRouteWrapper><ChannelDetail /></BizLineRouteWrapper>} />
+        <Route path="/channel/partner/:partnerName" element={<BizLineRouteWrapper><PartnerDetail /></BizLineRouteWrapper>} />
+        <Route path="/channel/partner/:partnerName/city/:cityName" element={<BizLineRouteWrapper><PartnerDetail /></BizLineRouteWrapper>} />
+        <Route path="/merchant/drilldown" element={<BizLineRouteWrapper><MerchantTierDrilldown /></BizLineRouteWrapper>} />
+
+        <Route path="/overview/partner" element={<Navigate to="/overview/city" replace />} />
+
+        {/* 旧路由重定向（默认到外卖） */}
+        <Route path="/product" element={<Navigate to="/waimai/product/overview" replace />} />
+        <Route path="/product/detail" element={<Navigate to="/waimai/product/detail" replace />} />
+        <Route path="/merchant" element={<Navigate to="/waimai/merchant/overview" replace />} />
+        <Route path="/merchant/detail" element={<Navigate to="/waimai/merchant/segment" replace />} />
+        <Route path="/channel" element={<Navigate to="/waimai/channel/region" replace />} />
+        <Route path="/channel/region-detail" element={<Navigate to="/waimai/channel/region" replace />} />
+        <Route path="/channel/partner-detail" element={<Navigate to="/waimai/channel/partner" replace />} />
+        <Route path="/channel/city-detail" element={<Navigate to="/waimai/channel/city" replace />} />
+        <Route path="/channel/bd-detail" element={<Navigate to="/waimai/channel/bd" replace />} />
+        <Route path="/goal-incentive" element={<Navigate to="/waimai/channel/region" replace />} />
+        <Route path="/product-segmentation" element={<Navigate to="/waimai/product/overview" replace />} />
+        <Route path="/merchant-tier-analysis" element={<Navigate to="/waimai/merchant/overview" replace />} />
+        <Route path="/business-diagnosis" element={<Navigate to="/waimai/channel/region" replace />} />
+        <Route path="/incentive-calculation" element={<Navigate to="/waimai/channel/region" replace />} />
+        <Route path="/goal-management" element={<Navigate to="/waimai/channel/region" replace />} />
       </Route>
     </Routes>
   );

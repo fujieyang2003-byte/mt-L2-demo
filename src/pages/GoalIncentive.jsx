@@ -47,6 +47,7 @@ import {
   DollarSign,
   Calendar,
 } from "lucide-react";
+import AiPanel from "@/components/AiPanel";
 
 /* ================================================================== */
 /* 共享组件                                                            */
@@ -81,28 +82,6 @@ const PayStatusBadge = ({ status }) => {
   return <Badge className={`border-none font-normal ${cfg.className}`}>{status}</Badge>;
 };
 
-const AiDiagnosisCard = ({ items }) => (
-  <Card className="border-none shadow-sm bg-white">
-    <CardHeader>
-      <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#4080FF]" />
-        AI 智能分析
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2.5">
-        {items.map((text, index) => (
-          <div key={index} className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-            <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-              {index + 1}
-            </span>
-            <p className="leading-relaxed">{text}</p>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
-);
 
 const parseAmount = (value) => parseFloat(value.replace(/[^\d.]/g, "")) || 0;
 
@@ -134,72 +113,72 @@ const goalAdminSummary = {
 
 const goalAdminRegionRows = {
   waimai: [
-    { region: "华东区", target: "1,800万", achieved: "1,620万", rate: 90, gap: "180万", dailyNeeded: "9万", profitBase: "1,620万", profitRate: "1.8%", profitAmount: "29.2万", yoy: "+12.4%" },
-    { region: "华南区", target: "1,400万", achieved: "1,330万", rate: 95, gap: "70万", dailyNeeded: "3.5万", profitBase: "1,330万", profitRate: "1.8%", profitAmount: "23.9万", yoy: "+8.1%" },
-    { region: "华北区", target: "1,200万", achieved: "888万", rate: 74, gap: "312万", dailyNeeded: "15.6万", profitBase: "888万", profitRate: "1.2%", profitAmount: "10.7万", yoy: "-3.6%" },
-    { region: "西南区", target: "1,200万", achieved: "1,164万", rate: 97, gap: "36万", dailyNeeded: "1.8万", profitBase: "1,164万", profitRate: "1.8%", profitAmount: "21.0万", yoy: "+15.2%" },
-    { region: "东北区", target: "780万", achieved: "439万", rate: 56, gap: "341万", dailyNeeded: "17.1万", profitBase: "439万", profitRate: "1.0%", profitAmount: "4.4万", yoy: "-8.3%" },
+    { region: "江苏区域", target: "1,800万", achieved: "1,620万", rate: 90, gap: "180万", dailyNeeded: "9万", profitBase: "1,620万", profitRate: "1.8%", profitAmount: "29.2万", yoy: "+12.4%" },
+    { region: "粤海区域", target: "1,400万", achieved: "1,330万", rate: 95, gap: "70万", dailyNeeded: "3.5万", profitBase: "1,330万", profitRate: "1.8%", profitAmount: "23.9万", yoy: "+8.1%" },
+    { region: "京津冀区域", target: "1,200万", achieved: "888万", rate: 74, gap: "312万", dailyNeeded: "15.6万", profitBase: "888万", profitRate: "1.2%", profitAmount: "10.7万", yoy: "-3.6%" },
+    { region: "川藏区域", target: "1,200万", achieved: "1,164万", rate: 97, gap: "36万", dailyNeeded: "1.8万", profitBase: "1,164万", profitRate: "1.8%", profitAmount: "21.0万", yoy: "+15.2%" },
+    { region: "辽吉区域", target: "780万", achieved: "439万", rate: 56, gap: "341万", dailyNeeded: "17.1万", profitBase: "439万", profitRate: "1.0%", profitAmount: "4.4万", yoy: "-8.3%" },
   ],
   daocan: [
-    { region: "华东区", target: "1,400万", achieved: "1,292万", rate: 92, gap: "108万", dailyNeeded: "5.4万", profitBase: "1,292万", profitRate: "1.6%", profitAmount: "20.7万", yoy: "+10.1%" },
-    { region: "华南区", target: "1,200万", achieved: "1,140万", rate: 95, gap: "60万", dailyNeeded: "3万", profitBase: "1,140万", profitRate: "1.6%", profitAmount: "18.2万", yoy: "+6.5%" },
-    { region: "华北区", target: "900万", achieved: "666万", rate: 74, gap: "234万", dailyNeeded: "11.7万", profitBase: "666万", profitRate: "1.0%", profitAmount: "6.7万", yoy: "-5.2%" },
-    { region: "西南区", target: "300万", achieved: "291万", rate: 97, gap: "9万", dailyNeeded: "0.5万", profitBase: "291万", profitRate: "1.6%", profitAmount: "4.7万", yoy: "+9.8%" },
-    { region: "东北区", target: "200万", achievable: "—", achieved: "131万", rate: 66, gap: "69万", dailyNeeded: "3.5万", profitBase: "131万", profitRate: "0.8%", profitAmount: "1.0万", yoy: "-12.1%" },
+    { region: "江苏区域", target: "1,400万", achieved: "1,292万", rate: 92, gap: "108万", dailyNeeded: "5.4万", profitBase: "1,292万", profitRate: "1.6%", profitAmount: "20.7万", yoy: "+10.1%" },
+    { region: "粤海区域", target: "1,200万", achieved: "1,140万", rate: 95, gap: "60万", dailyNeeded: "3万", profitBase: "1,140万", profitRate: "1.6%", profitAmount: "18.2万", yoy: "+6.5%" },
+    { region: "京津冀区域", target: "900万", achieved: "666万", rate: 74, gap: "234万", dailyNeeded: "11.7万", profitBase: "666万", profitRate: "1.0%", profitAmount: "6.7万", yoy: "-5.2%" },
+    { region: "川藏区域", target: "300万", achieved: "291万", rate: 97, gap: "9万", dailyNeeded: "0.5万", profitBase: "291万", profitRate: "1.6%", profitAmount: "4.7万", yoy: "+9.8%" },
+    { region: "辽吉区域", target: "200万", achievable: "—", achieved: "131万", rate: 66, gap: "69万", dailyNeeded: "3.5万", profitBase: "131万", profitRate: "0.8%", profitAmount: "1.0万", yoy: "-12.1%" },
   ],
 };
 
 // 下钻：区域 → 城市 → 合作商
 const drillDownData = {
   waimai: {
-    "华东区": [
+    "江苏区域": [
       { city: "上海", partner: "上海总商A", target: "600万", achieved: "540万", rate: 90, profitAmount: "9.7万" },
       { city: "杭州", partner: "杭州总商B", target: "500万", achieved: "480万", rate: 96, profitAmount: "8.6万" },
       { city: "南京", partner: "南京总商C", target: "400万", achieved: "360万", rate: 90, profitAmount: "6.5万" },
       { city: "苏州", partner: "苏州总商D", target: "300万", achieved: "240万", rate: 80, profitAmount: "4.3万" },
     ],
-    "华南区": [
+    "粤海区域": [
       { city: "广州", partner: "广州总商E", target: "500万", achieved: "490万", rate: 98, profitAmount: "8.8万" },
       { city: "深圳", partner: "深圳总商F", target: "500万", achieved: "450万", rate: 90, profitAmount: "8.1万" },
       { city: "厦门", partner: "厦门总商G", target: "400万", achieved: "390万", rate: 98, profitAmount: "7.0万" },
     ],
-    "华北区": [
+    "京津冀区域": [
       { city: "北京", partner: "北京总商H", target: "500万", achieved: "380万", rate: 76, profitAmount: "4.6万" },
       { city: "天津", partner: "天津总商I", target: "400万", achieved: "280万", rate: 70, profitAmount: "3.4万" },
       { city: "石家庄", partner: "石家庄总商J", target: "300万", achieved: "228万", rate: 76, profitAmount: "2.7万" },
     ],
-    "西南区": [
+    "川藏区域": [
       { city: "成都", partner: "成都总商K", target: "500万", achieved: "490万", rate: 98, profitAmount: "8.8万" },
       { city: "重庆", partner: "重庆总商L", target: "400万", achieved: "384万", rate: 96, profitAmount: "6.9万" },
       { city: "昆明", partner: "昆明总商M", target: "300万", achieved: "290万", rate: 97, profitAmount: "5.2万" },
     ],
-    "东北区": [
+    "辽吉区域": [
       { city: "沈阳", partner: "沈阳总商N", target: "300万", achieved: "180万", rate: 60, profitAmount: "1.8万" },
       { city: "大连", partner: "大连总商O", target: "280万", achievable: "—", achieved: "160万", rate: 57, profitAmount: "1.6万" },
       { city: "长春", partner: "长春总商P", target: "200万", achieved: "99万", rate: 50, profitAmount: "1.0万" },
     ],
   },
   daocan: {
-    "华东区": [
+    "江苏区域": [
       { city: "上海", partner: "上海餐联A", target: "500万", achieved: "470万", rate: 94, profitAmount: "7.5万" },
       { city: "杭州", partner: "杭州餐联B", target: "500万", achieved: "450万", rate: 90, profitAmount: "7.2万" },
       { city: "南京", partner: "南京餐联C", target: "400万", achieved: "372万", rate: 93, profitAmount: "6.0万" },
     ],
-    "华南区": [
+    "粤海区域": [
       { city: "广州", partner: "广州餐联D", target: "500万", achieved: "480万", rate: 96, profitAmount: "7.7万" },
       { city: "深圳", partner: "深圳餐联E", target: "400万", achieved: "380万", rate: 95, profitAmount: "6.1万" },
       { city: "厦门", partner: "厦门餐联F", target: "300万", achieved: "280万", rate: 93, profitAmount: "4.4万" },
     ],
-    "华北区": [
+    "京津冀区域": [
       { city: "北京", partner: "北京餐联G", target: "400万", achieved: "290万", rate: 73, profitAmount: "2.9万" },
       { city: "天津", partner: "天津餐联H", target: "300万", achieved: "210万", rate: 70, profitAmount: "2.1万" },
       { city: "石家庄", partner: "石家庄餐联I", target: "200万", achieved: "166万", rate: 83, profitAmount: "1.7万" },
     ],
-    "西南区": [
+    "川藏区域": [
       { city: "成都", partner: "成都餐联J", target: "200万", achieved: "195万", rate: 98, profitAmount: "3.1万" },
       { city: "重庆", partner: "重庆餐联K", target: "100万", achieved: "96万", rate: 96, profitAmount: "1.6万" },
     ],
-    "东北区": [
+    "辽吉区域": [
       { city: "沈阳", partner: "沈阳餐联L", target: "100万", achieved: "68万", rate: 68, profitAmount: "0.5万" },
       { city: "大连", partner: "大连餐联M", target: "60万", achieved: "38万", rate: 63, profitAmount: "0.3万" },
       { city: "长春", partner: "长春餐联N", target: "40万", achieved: "25万", rate: 63, profitAmount: "0.2万" },
@@ -209,15 +188,15 @@ const drillDownData = {
 
 const goalAdminDiagnosis = {
   waimai: [
-    "华北区达成率74%低于预警线，剩余缺口312万，建议本周安排专项会议跟进，重点推动北京和天津的尾部城市冲刺",
-    "东北区达成率仅56%，远低于全国均值，预计月底达成率约65%，存在严重风险，建议紧急调配资源支持",
+    "京津冀区域达成率74%低于预警线，剩余缺口312万，建议本周安排专项会议跟进，重点推动北京和天津的尾部城市冲刺",
+    "辽吉区域达成率仅56%，远低于全国均值，预计月底达成率约65%，存在严重风险，建议紧急调配资源支持",
     "整体达成率预计月底可达85%，需集中力量攻坚华北和东北两个薄弱区域，预计还需日均47万才能完成目标",
-    "西南区达成率97%表现优异，可将其成功经验（商户拜访SOP+CPS推广活动）复制到华北区",
+    "川藏区域达成率97%表现优异，可将其成功经验（商户拜访SOP+CPS推广活动）复制到京津冀区域",
   ],
   daocan: [
-    "到餐业务整体达成率76%，低于外卖线，主要拖累来自华北区（74%）和东北区（66%）",
-    "华东区和华南区达成率超90%，是到餐收入的主要贡献区域，建议保持当前策略",
-    "东北区到餐业务达成率66%为全国最低，建议排查合作商执行力和商户覆盖情况",
+    "到餐业务整体达成率76%，低于外卖线，主要拖累来自京津冀区域（74%）和辽吉区域（66%）",
+    "江苏区域和粤海区域达成率超90%，是到餐收入的主要贡献区域，建议保持当前策略",
+    "辽吉区域到餐业务达成率66%为全国最低，建议排查合作商执行力和商户覆盖情况",
     "按当前进度，到餐线月底预计达成率约80%，缺口约980万，建议加大腰部城市的新签商户拓展力度",
   ],
 };
@@ -233,32 +212,32 @@ const incAdminSummary = {
 
 const incAdminRegionRows = {
   waimai: [
-    { region: "华东区", budget: "300万", paid: "280万", remaining: "20万", rate: 93, profitBase: "1,620万", achRate: "90%", profitRatio: "1.8%", profitAmount: "29.2万", status: "已发放" },
-    { region: "华南区", budget: "240万", paid: "220万", remaining: "20万", rate: 92, profitBase: "1,330万", achRate: "95%", profitRatio: "1.8%", profitAmount: "23.9万", status: "已发放" },
-    { region: "华北区", budget: "200万", paid: "130万", remaining: "70万", rate: 65, profitBase: "888万", achRate: "74%", profitRatio: "1.2%", profitAmount: "10.7万", status: "待发放" },
-    { region: "西南区", budget: "200万", paid: "180万", remaining: "20万", rate: 90, profitBase: "1,164万", achRate: "97%", profitRatio: "1.8%", profitAmount: "21.0万", status: "已发放" },
-    { region: "东北区", budget: "160万", paid: "80万", remaining: "80万", rate: 50, profitBase: "439万", achRate: "56%", profitRatio: "1.0%", profitAmount: "4.4万", status: "计算中" },
+    { region: "江苏区域", budget: "300万", paid: "280万", remaining: "20万", rate: 93, profitBase: "1,620万", achRate: "90%", profitRatio: "1.8%", profitAmount: "29.2万", status: "已发放" },
+    { region: "粤海区域", budget: "240万", paid: "220万", remaining: "20万", rate: 92, profitBase: "1,330万", achRate: "95%", profitRatio: "1.8%", profitAmount: "23.9万", status: "已发放" },
+    { region: "京津冀区域", budget: "200万", paid: "130万", remaining: "70万", rate: 65, profitBase: "888万", achRate: "74%", profitRatio: "1.2%", profitAmount: "10.7万", status: "待发放" },
+    { region: "川藏区域", budget: "200万", paid: "180万", remaining: "20万", rate: 90, profitBase: "1,164万", achRate: "97%", profitRatio: "1.8%", profitAmount: "21.0万", status: "已发放" },
+    { region: "辽吉区域", budget: "160万", paid: "80万", remaining: "80万", rate: 50, profitBase: "439万", achRate: "56%", profitRatio: "1.0%", profitAmount: "4.4万", status: "计算中" },
   ],
   daocan: [
-    { region: "华东区", budget: "200万", paid: "170万", remaining: "30万", rate: 85, profitBase: "1,292万", achRate: "92%", profitRatio: "1.6%", profitAmount: "20.7万", status: "已发放" },
-    { region: "华南区", budget: "160万", paid: "140万", remaining: "20万", rate: 88, profitBase: "1,140万", achRate: "95%", profitRatio: "1.6%", profitAmount: "18.2万", status: "已发放" },
-    { region: "华北区", budget: "120万", paid: "70万", remaining: "50万", rate: 58, profitBase: "666万", achRate: "74%", profitRatio: "1.0%", profitAmount: "6.7万", status: "待发放" },
-    { region: "西南区", budget: "60万", paid: "45万", remaining: "15万", rate: 75, profitBase: "291万", achRate: "97%", profitRatio: "1.6%", profitAmount: "4.7万", status: "计算中" },
-    { region: "东北区", budget: "60万", paid: "25万", remaining: "35万", rate: 42, profitBase: "131万", achRate: "66%", profitRatio: "0.8%", profitAmount: "1.0万", status: "计算中" },
+    { region: "江苏区域", budget: "200万", paid: "170万", remaining: "30万", rate: 85, profitBase: "1,292万", achRate: "92%", profitRatio: "1.6%", profitAmount: "20.7万", status: "已发放" },
+    { region: "粤海区域", budget: "160万", paid: "140万", remaining: "20万", rate: 88, profitBase: "1,140万", achRate: "95%", profitRatio: "1.6%", profitAmount: "18.2万", status: "已发放" },
+    { region: "京津冀区域", budget: "120万", paid: "70万", remaining: "50万", rate: 58, profitBase: "666万", achRate: "74%", profitRatio: "1.0%", profitAmount: "6.7万", status: "待发放" },
+    { region: "川藏区域", budget: "60万", paid: "45万", remaining: "15万", rate: 75, profitBase: "291万", achRate: "97%", profitRatio: "1.6%", profitAmount: "4.7万", status: "计算中" },
+    { region: "辽吉区域", budget: "60万", paid: "25万", remaining: "35万", rate: 42, profitBase: "131万", achRate: "66%", profitRatio: "0.8%", profitAmount: "1.0万", status: "计算中" },
   ],
 };
 
 const incAdminDiagnosis = {
   waimai: [
-    "华南区激励发放率92%为全国最高，激励驱动效果显著，建议将其激励方案作为标杆推广",
-    "华北区剩余激励预算较多（70万），建议加大激励发放节奏推动月底冲刺，优先向达成率74%的合作商倾斜",
-    "东北区激励发放率仅50%，配合其达成率56%的情况，建议核查激励方案是否合理，必要时调整激励系数",
+    "粤海区域激励发放率92%为全国最高，激励驱动效果显著，建议将其激励方案作为标杆推广",
+    "京津冀区域剩余激励预算较多（70万），建议加大激励发放节奏推动月底冲刺，优先向达成率74%的合作商倾斜",
+    "辽吉区域激励发放率仅50%，配合其达成率56%的情况，建议核查激励方案是否合理，必要时调整激励系数",
     "整体激励发放率81%，预计月底可达90%以上，外卖线分润总额预计89.2万",
   ],
   daocan: [
-    "到餐线激励发放率75%，低于外卖线，主要拖累来自华北区（58%）和东北区（42%）",
-    "华东区和华南区发放率超85%，激励使用效率较高，分润已全额发放",
-    "到餐线分润总额预计51.3万，其中华东区占比40%贡献最大",
+    "到餐线激励发放率75%，低于外卖线，主要拖累来自京津冀区域（58%）和辽吉区域（42%）",
+    "江苏区域和粤海区域发放率超85%，激励使用效率较高，分润已全额发放",
+    "到餐线分润总额预计51.3万，其中江苏区域占比40%贡献最大",
     "建议对到餐线达成率低于70%的区域暂缓发放激励，待业绩改善后补发",
   ],
 };
@@ -444,7 +423,7 @@ const GoalHeadquarterView = () => {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-8" />
-                <TableHead>大区</TableHead>
+                <TableHead>区域</TableHead>
                 <TableHead>目标收入</TableHead>
                 <TableHead>实际完成</TableHead>
                 <TableHead className="w-40">达成率</TableHead>
@@ -632,7 +611,7 @@ const GoalHeadquarterView = () => {
       </Collapsible>
 
       {/* AI 智能分析 */}
-      <AiDiagnosisCard items={aiItems} />
+      <AiPanel items={aiItems} />
     </div>
   );
 };
@@ -672,7 +651,7 @@ const GoalBizManagerView = () => (
         </Table>
       </CardContent>
     </Card>
-    <AiDiagnosisCard items={goalBizManagerDiagnosis} />
+    <AiPanel items={goalBizManagerDiagnosis} />
   </div>
 );
 
@@ -709,7 +688,7 @@ const GoalPartnerView = () => (
         </Table>
       </CardContent>
     </Card>
-    <AiDiagnosisCard items={goalPartnerDiagnosis} />
+    <AiPanel items={goalPartnerDiagnosis} />
   </div>
 );
 
@@ -770,7 +749,7 @@ const GoalBdView = () => {
           </Table>
         </CardContent>
       </Card>
-      <AiDiagnosisCard items={goalBdDiagnosis} />
+      <AiPanel items={goalBdDiagnosis} />
     </>
   );
 };
@@ -826,7 +805,7 @@ const IncHeadquarterView = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>大区</TableHead>
+                <TableHead>区域</TableHead>
                 <TableHead>激励预算</TableHead>
                 <TableHead>已发放</TableHead>
                 <TableHead>剩余</TableHead>
@@ -872,7 +851,7 @@ const IncHeadquarterView = () => {
         </CardContent>
       </Card>
 
-      <AiDiagnosisCard items={aiItems} />
+      <AiPanel items={aiItems} />
     </div>
   );
 };
@@ -926,7 +905,7 @@ const IncBizManagerView = () => {
           </Table>
         </CardContent>
       </Card>
-      <AiDiagnosisCard items={incBizManagerDiagnosis} />
+      <AiPanel items={incBizManagerDiagnosis} />
     </div>
   );
 };
@@ -975,7 +954,7 @@ const IncPartnerView = () => {
           </Table>
         </CardContent>
       </Card>
-      <AiDiagnosisCard items={incPartnerDiagnosis} />
+      <AiPanel items={incPartnerDiagnosis} />
     </div>
   );
 };
@@ -1035,7 +1014,7 @@ const IncBdView = () => {
           </Table>
         </CardContent>
       </Card>
-      <AiDiagnosisCard items={incBdDiagnosis} />
+      <AiPanel items={incBdDiagnosis} />
     </>
   );
 };

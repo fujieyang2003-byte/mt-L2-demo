@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 
 /**
  * 基于当前行数据生成一段 AI 模拟的经营诊断文本。
+ * 会尽量从 rowData 中提取常见字段（城市/区域/名称、收入、RF、MR、YoY、MoM、健康评级等），
+ * 拼接成"【经营诊断】...."格式的文本。
  */
 const buildDiagnosisText = (targetName, rowData = {}) => {
   const name = targetName || rowData.name || rowData.city || rowData.region || "该对象";
@@ -44,6 +46,11 @@ const buildDiagnosisText = (targetName, rowData = {}) => {
 
 /**
  * 诊断消息下发弹窗（Demo 模式：模拟发送，不调用真实 API）。
+ * @param {boolean} open 弹窗是否打开
+ * @param {(open: boolean) => void} onOpenChange 弹窗开关状态变化回调
+ * @param {string} targetName 推送目标名称（如城市/区域/BD 姓名）
+ * @param {string} targetMis 推送目标 MIS 号
+ * @param {object} rowData 当前行数据，用于生成诊断文本
  */
 const DiagnosisPushDialog = ({
   open,

@@ -74,3 +74,214 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ==================================================================== */
+/* Apple 风格全局动效                                                     */
+/* ==================================================================== */
+
+/* 苹果标准缓动曲线：先快后慢，收尾极缓，无回弹 */
+:root {
+  --nk-ease: cubic-bezier(0.32, 0.72, 0, 1);
+  --nk-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --nk-dur: 0.5s;
+}
+
+/* —— AI 面板：高度过渡容器 —— */
+.nk-collapse {
+  display: block;
+  overflow: hidden;
+  height: 0;
+  opacity: 0;
+  transform: translateY(-6px) scale(0.996);
+  transform-origin: top center;
+  transition:
+    height var(--nk-dur) var(--nk-ease),
+    opacity calc(var(--nk-dur) * 0.8) var(--nk-ease-out),
+    transform var(--nk-dur) var(--nk-ease);
+}
+.nk-collapse[data-open="1"] {
+  height: auto;
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* —— 条目级联淡入上浮 —— */
+.nk-stagger {
+  animation: nk-fade-up 0.55s var(--nk-ease-out) both;
+}
+@keyframes nk-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* —— 按压反馈（模拟苹果按钮的缩放按压） —— */
+.nk-press {
+  transition: opacity 0.2s var(--nk-ease-out), transform 0.25s var(--nk-ease);
+}
+.nk-press:active {
+  transform: scale(0.97);
+  opacity: 0.75;
+}
+
+/* —— 箭头旋转 —— */
+.nk-chevron {
+  transition: transform 0.45s var(--nk-ease);
+}
+
+/* —— 页面切换：淡入 + 轻微上浮（苹果视图切换质感） —— */
+.nk-page-enter {
+  animation: nk-page-in 0.45s var(--nk-ease-out) both;
+}
+@keyframes nk-page-in {
+  from {
+    opacity: 0;
+    transform: translateY(14px) scale(0.995);
+    filter: blur(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+/* —— 卡片/表格容器入场 —— */
+.nk-card {
+  animation: nk-card-in 0.5s var(--nk-ease-out) both;
+}
+@keyframes nk-card-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* —— 全局 UI 微调：让所有交互元素获得苹果质感 —— */
+button,
+a,
+[role="button"],
+[role="tab"],
+[role="menuitem"],
+[role="option"],
+summary {
+  transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+  transition-duration: 0.28s;
+  transition-timing-function: var(--nk-ease);
+}
+button:active,
+a:active,
+[role="button"]:active,
+[role="tab"]:active {
+  transform: scale(0.97);
+}
+
+/* —— shadcn/radix Tabs 内容切换：淡入上浮 —— */
+[data-state="active"][role="tabpanel"],
+[data-slot="tabs-content"][data-state="active"] {
+  animation: nk-page-in 0.4s var(--nk-ease-out) both;
+}
+
+/* —— 尊重系统"减少动态效果"设置 —— */
+@media (prefers-reduced-motion: reduce) {
+  .nk-collapse,
+  .nk-stagger,
+  .nk-page-enter,
+  .nk-card,
+  .nk-press,
+  .nk-chevron {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ==================================================================== */
+/* 打字机光标：AI 生成文字时的闪烁竖线                                    */
+/* ==================================================================== */
+.nk-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1.1em;
+  background: linear-gradient(180deg, #7c3aed, #6366f1);
+  border-radius: 1px;
+  margin-left: 1px;
+  vertical-align: text-bottom;
+  animation: nk-cursor-blink 0.9s step-end infinite;
+}
+@keyframes nk-cursor-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* ==================================================================== */
+/* 展开/收起按钮：精美胶囊样式                                           */
+/* ==================================================================== */
+.nk-expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 0;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  outline: none;
+  transition: opacity 0.25s var(--nk-ease);
+}
+.nk-expand-btn:hover {
+  opacity: 0.8;
+}
+.nk-expand-btn:active {
+  transform: scale(0.98);
+}
+
+.nk-expand-line {
+  display: block;
+  height: 1px;
+  flex: 1;
+  max-width: 80px;
+  background: linear-gradient(90deg, transparent, #d8b4fe, transparent);
+  opacity: 0.6;
+  transition: opacity 0.3s var(--nk-ease);
+}
+.nk-expand-btn:hover .nk-expand-line {
+  opacity: 1;
+}
+
+.nk-expand-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7c3aed;
+  letter-spacing: 0.02em;
+  padding: 4px 14px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.06), rgba(99, 102, 241, 0.06));
+  border: 1px solid rgba(124, 58, 237, 0.12);
+  transition: all 0.35s var(--nk-ease);
+  white-space: nowrap;
+}
+.nk-expand-btn:hover .nk-expand-text {
+  background: linear-gradient(135deg, rgba(124, 58, 237, 0.12), rgba(99, 102, 241, 0.12));
+  border-color: rgba(124, 58, 237, 0.22);
+  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.08);
+}
+
+.nk-expand-chevron {
+  width: 14px;
+  height: 14px;
+  color: #a78bfa;
+  transition: transform 0.45s var(--nk-ease), color 0.25s var(--nk-ease);
+}
+.nk-expand-btn:hover .nk-expand-chevron {
+  color: #7c3aed;
+}

@@ -1,7 +1,6 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { useUser } from "@/contexts/UserContext";
 import { useBizLine } from "@/contexts/BizLineContext";
-import PageHeader from "@/components/dashboard/PageHeader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -22,6 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+} from "@/components/ui/tabs";
 import {
   PieChart,
   Pie,
@@ -44,6 +49,8 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
+import { AiResultList } from "@/components/AiPanel";
+import AiAnalysisPanel from "@/components/AiAnalysisPanel";
 
 /* ================================================================== */
 /* 共享组件                                                            */
@@ -53,29 +60,6 @@ const RateProgress = ({ rate }) => (
     <Progress value={Math.min(rate, 100)} className="h-2 flex-1" />
     <span className="text-xs text-gray-500 w-10 shrink-0">{rate}%</span>
   </div>
-);
-
-const AiDiagnosisCard = ({ items }) => (
-  <Card className="border-none shadow-sm bg-white">
-    <CardHeader>
-      <CardTitle className="text-base font-semibold text-gray-900 flex items-center gap-2">
-        <Sparkles className="w-4 h-4 text-[#4080FF]" />
-        AI 智能分析
-      </CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="space-y-2.5">
-        {items.map((text, index) => (
-          <div key={index} className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/50 text-sm text-gray-700">
-            <span className="w-5 h-5 rounded-full bg-white text-[#4080FF] text-xs font-semibold flex items-center justify-center shrink-0 mt-0.5">
-              {index + 1}
-            </span>
-            <p className="leading-relaxed">{typeof text === "string" ? text : text.title ? `${text.title}：${text.text}` : text.text}</p>
-          </div>
-        ))}
-      </div>
-    </CardContent>
-  </Card>
 );
 
 const parseAmount = (value) => parseFloat(value.replace(/[^\d.]/g, "")) || 0;
@@ -102,48 +86,44 @@ const SummaryCards = ({ items }) => (
 /* 外卖产品定义（28个产品）                                             */
 /* ================================================================== */
 const WAIMAI_PRODUCTS = [
-  { code: "djtg", name: "点金推广", category: "竞价广告" },
-  { code: "qztgjj", name: "全站推广（竞价）", category: "竞价广告" },
-  { code: "cjllk", name: "超级流量卡", category: "竞价广告" },
+  { code: "djtg", name: "点金推广", category: "效果广告" },
+  { code: "qztgjj", name: "全站推广（竞价）", category: "效果广告" },
+  { code: "cjllk", name: "超级流量卡", category: "效果广告" },
   { code: "ddt", name: "订单通", category: "效果广告" },
   { code: "ddtqz", name: "订单通（全站）", category: "效果广告" },
   { code: "lkb", name: "揽客宝", category: "效果广告" },
   { code: "phf", name: "拼好饭推广", category: "效果广告" },
   { code: "sglljsb", name: "闪购流量加速包", category: "效果广告" },
-  { code: "sgyzs", name: "闪购一站式", category: "一站式" },
-  { code: "zxyzs", name: "中小一站式", category: "一站式" },
-  { code: "sgyzs", name: "闪购一站式", category: "一站式" },
-  { code: "bjcpm", name: "铂金展位CPM", category: "品牌广告" },
-  { code: "bjcpt", name: "铂金展位CPT", category: "品牌广告" },
-  { code: "bjzw", name: "铂金展位", category: "品牌广告" },
-  { code: "pzplc", name: "品专品类词", category: "品牌广告" },
-  { code: "pzppc", name: "品专品牌词", category: "品牌广告" },
-  { code: "jzzp", name: "金字招牌", category: "品牌广告" },
-  { code: "ppzx", name: "品牌装修", category: "品牌广告" },
-  { code: "sylbkp_wm_cpm", name: "首页列表卡片", category: "品牌广告" },
-  { code: "yxhd", name: "营销活动", category: "营销活动" },
-  { code: "yxmf", name: "营销魔方", category: "营销活动" },
-  { code: "jtlm", name: "津贴联盟", category: "营销活动" },
-  { code: "sjlm", name: "赏金联盟", category: "营销活动" },
-  { code: "dsdz", name: "袋鼠店长", category: "工具服务" },
-  { code: "znhd", name: "流量助手", category: "工具服务" },
-  { code: "fwsc", name: "服务市场", category: "工具服务" },
-  { code: "yysc", name: "应用市场", category: "工具服务" },
-  { code: "kdg_wm_cpt", name: "跨店购", category: "工具服务" },
-  { code: "yycpt", name: "异业CPT", category: "工具服务" },
+  { code: "sgyzs", name: "闪购一站式", category: "效果广告" },
+  { code: "zxyzs", name: "中小一站式", category: "效果广告" },
+  { code: "yxmf", name: "营销魔方", category: "效果广告" },
+  { code: "jtlm", name: "津贴联盟", category: "效果广告" },
+  { code: "yxhd", name: "营销活动", category: "效果广告" },
+  { code: "sjlm", name: "赏金联盟", category: "效果广告" },
+  { code: "dsdz", name: "袋鼠店长", category: "增值产品" },
+  { code: "jzzp", name: "金字招牌", category: "增值产品" },
+  { code: "znhd", name: "流量助手", category: "省钱产品" },
+  { code: "bjcpm", name: "铂金展位CPM", category: "品宣产品" },
+  { code: "bjcpt", name: "铂金展位CPT", category: "品宣产品" },
+  { code: "bjzw", name: "铂金展位", category: "品宣产品" },
+  { code: "pzplc", name: "品专品类词", category: "品宣产品" },
+  { code: "pzppc", name: "品专品牌词", category: "品宣产品" },
+  { code: "ppzx", name: "品牌装修", category: "品宣产品" },
+  { code: "sylbkp_wm_cpm", name: "首页列表卡片", category: "品宣产品" },
+  { code: "fwsc", name: "服务市场", category: "增值产品" },
+  { code: "yysc", name: "应用市场", category: "增值产品" },
+  { code: "kdg_wm_cpt", name: "跨店购", category: "增值产品" },
+  { code: "yycpt", name: "异业CPT", category: "增值产品" },
 ];
 
-/* 外卖产品色板（按品类分色） */
-const WAIMAI_CATEGORY_COLORS = {
-  "竞价广告": "#4080FF",
-  "效果广告": "#00C896",
-  "品牌广告": "#FF8C42",
-  "一站式": "#A855F7",
-  "营销活动": "#EC4899",
-  "工具服务": "#6B7280",
-};
-
-const waimaiColorFor = (product) => WAIMAI_CATEGORY_COLORS[product.category] || "#94A3B8";
+/* 外卖产品色板（每个产品独立颜色，28色） */
+const WAIMAI_PRODUCT_COLORS = [
+  "#2563EB", "#3B82F6", "#60A5FA", "#93C5FD", "#1D4ED8", "#1E40AF", "#1E3A8A",
+  "#0EA5E9", "#0284C7", "#0369A1", "#075985", "#0C4A6E", "#0891B2", "#155E75",
+  "#059669", "#10B981", "#34D399", "#6EE7B7", "#A7F3D0", "#D1FAE5",
+  "#F59E0B",
+  "#8B5CF6", "#A78BFA", "#C4B5FD", "#DDD6FE", "#EDE9FE", "#F472B6", "#FB7185",
+];
 
 /* ================================================================== */
 /* 到餐产品定义（5个消耗类型）                                          */
@@ -164,65 +144,192 @@ const daocanColorFor = (idx) => DAOCAN_COLORS[idx % DAOCAN_COLORS.length];
 /* 外卖产品收入数据（28个产品）                                         */
 /* ================================================================== */
 const waimaiProductRevenue = [
-  { name: "点金推广", category: "竞价广告", revenue: "1,860万", target: "2,000万", rate: 93, share: 15.2, yoy: "+14.5%", mom: "+3.1%", merchants: 1820, arpu: "1.02万", coverage: "78%" },
-  { name: "全站推广（竞价）", category: "竞价广告", revenue: "1,240万", target: "1,400万", rate: 89, share: 10.1, yoy: "+28.3%", mom: "+8.2%", merchants: 960, arpu: "1.29万", coverage: "41%" },
-  { name: "超级流量卡", category: "竞价广告", revenue: "780万", target: "900万", rate: 87, share: 6.4, yoy: "+18.7%", mom: "+2.5%", merchants: 1240, arpu: "0.63万", coverage: "53%" },
-  { name: "订单通", category: "效果广告", revenue: "1,520万", target: "1,600万", rate: 95, share: 12.4, yoy: "+22.1%", mom: "+5.3%", merchants: 2100, arpu: "0.72万", coverage: "89%" },
-  { name: "订单通（全站）", category: "效果广告", revenue: "680万", target: "750万", rate: 91, share: 5.6, yoy: "+35.6%", mom: "+9.1%", merchants: 780, arpu: "0.87万", coverage: "33%" },
-  { name: "揽客宝", category: "效果广告", revenue: "320万", target: "400万", rate: 80, share: 2.6, yoy: "+6.2%", mom: "-1.1%", merchants: 890, arpu: "0.36万", coverage: "38%" },
-  { name: "拼好饭推广", category: "效果广告", revenue: "260万", target: "280万", rate: 93, share: 2.1, yoy: "+45.8%", mom: "+12.3%", merchants: 1560, arpu: "0.17万", coverage: "67%" },
-  { name: "闪购流量加速包", category: "效果广告", revenue: "190万", target: "220万", rate: 86, share: 1.6, yoy: "+52.1%", mom: "+15.7%", merchants: 420, arpu: "0.45万", coverage: "18%" },
-  { name: "闪购一站式", category: "一站式", revenue: "420万", target: "450万", rate: 93, share: 3.4, yoy: "+40.2%", mom: "+10.5%", merchants: 680, arpu: "0.62万", coverage: "29%" },
-  { name: "中小一站式", category: "一站式", revenue: "680万", target: "800万", rate: 85, share: 5.6, yoy: "+16.8%", mom: "+2.8%", merchants: 2400, arpu: "0.28万", coverage: "100%" },
-  { name: "铂金展位CPM", category: "品牌广告", revenue: "580万", target: "700万", rate: 83, share: 4.7, yoy: "+8.9%", mom: "+1.2%", merchants: 320, arpu: "1.81万", coverage: "14%" },
-  { name: "铂金展位CPT", category: "品牌广告", revenue: "420万", target: "520万", rate: 81, share: 3.4, yoy: "+5.3%", mom: "-0.8%", merchants: 180, arpu: "2.33万", coverage: "8%" },
-  { name: "铂金展位", category: "品牌广告", revenue: "340万", target: "400万", rate: 85, share: 2.8, yoy: "+11.2%", mom: "+2.1%", merchants: 240, arpu: "1.42万", coverage: "10%" },
-  { name: "品专品类词", category: "品牌广告", revenue: "280万", target: "350万", rate: 80, share: 2.3, yoy: "+7.6%", mom: "+0.5%", merchants: 110, arpu: "2.55万", coverage: "5%" },
-  { name: "品专品牌词", category: "品牌广告", revenue: "220万", target: "300万", rate: 73, share: 1.8, yoy: "-3.2%", mom: "-2.1%", merchants: 80, arpu: "2.75万", coverage: "3%" },
-  { name: "金字招牌", category: "品牌广告", revenue: "310万", target: "360万", rate: 86, share: 2.5, yoy: "+13.4%", mom: "+3.2%", merchants: 560, arpu: "0.55万", coverage: "24%" },
-  { name: "品牌装修", category: "品牌广告", revenue: "180万", target: "240万", rate: 75, share: 1.5, yoy: "+4.1%", mom: "-1.3%", merchants: 420, arpu: "0.43万", coverage: "18%" },
-  { name: "首页列表卡片", category: "品牌广告", revenue: "240万", target: "280万", rate: 86, share: 2.0, yoy: "+19.6%", mom: "+4.8%", merchants: 380, arpu: "0.63万", coverage: "16%" },
-  { name: "营销活动", category: "营销活动", revenue: "420万", target: "500万", rate: 84, share: 3.4, yoy: "+9.8%", mom: "+2.6%", merchants: 890, arpu: "0.47万", coverage: "38%" },
-  { name: "营销魔方", category: "营销活动", revenue: "280万", target: "320万", rate: 88, share: 2.3, yoy: "+25.4%", mom: "+7.2%", merchants: 450, arpu: "0.62万", coverage: "19%" },
-  { name: "津贴联盟", category: "营销活动", revenue: "350万", target: "380万", rate: 92, share: 2.9, yoy: "+11.5%", mom: "+1.8%", merchants: 1200, arpu: "0.29万", coverage: "51%" },
-  { name: "赏金联盟", category: "营销活动", revenue: "190万", target: "250万", rate: 76, share: 1.6, yoy: "+8.8%", mom: "+0.9%", merchants: 680, arpu: "0.28万", coverage: "29%" },
-  { name: "袋鼠店长", category: "工具服务", revenue: "520万", target: "550万", rate: 95, share: 4.3, yoy: "+10.2%", mom: "+1.5%", merchants: 3200, arpu: "0.16万", coverage: "100%" },
-  { name: "流量助手", category: "工具服务", revenue: "180万", target: "200万", rate: 90, share: 1.5, yoy: "+16.5%", mom: "+3.8%", merchants: 1100, arpu: "0.16万", coverage: "47%" },
-  { name: "服务市场", category: "工具服务", revenue: "120万", target: "140万", rate: 86, share: 1.0, yoy: "+6.8%", mom: "+1.2%", merchants: 620, arpu: "0.19万", coverage: "26%" },
-  { name: "应用市场", category: "工具服务", revenue: "80万", target: "100万", rate: 80, share: 0.7, yoy: "+12.3%", mom: "+2.5%", merchants: 380, arpu: "0.21万", coverage: "16%" },
-  { name: "跨店购", category: "工具服务", revenue: "60万", target: "80万", rate: 75, share: 0.5, yoy: "+20.1%", mom: "+5.3%", merchants: 240, arpu: "0.25万", coverage: "10%" },
-  { name: "异业CPT", category: "工具服务", revenue: "40万", target: "50万", rate: 80, share: 0.3, yoy: "+8.5%", mom: "+1.8%", merchants: 120, arpu: "0.33万", coverage: "5%" },
+  { name: "点金推广", category: "效果广告", revenue: "1,860万", target: "2,000万", rate: 93, share: 15.2, yoy: "+14.5%", mom: "+3.1%", merchants: 1820, arpu: "141元", coverage: "78%" },
+  { name: "全站推广（竞价）", category: "效果广告", revenue: "1,240万", target: "1,400万", rate: 89, share: 10.1, yoy: "+28.3%", mom: "+8.2%", merchants: 960, arpu: "159元", coverage: "41%" },
+  { name: "超级流量卡", category: "效果广告", revenue: "780万", target: "900万", rate: 87, share: 6.4, yoy: "+18.7%", mom: "+2.5%", merchants: 1240, arpu: "111元", coverage: "53%" },
+  { name: "订单通", category: "效果广告", revenue: "1,520万", target: "1,600万", rate: 95, share: 12.4, yoy: "+22.1%", mom: "+5.3%", merchants: 2100, arpu: "119元", coverage: "89%" },
+  { name: "订单通（全站）", category: "效果广告", revenue: "680万", target: "750万", rate: 91, share: 5.6, yoy: "+35.6%", mom: "+9.1%", merchants: 780, arpu: "131元", coverage: "33%" },
+  { name: "揽客宝", category: "效果广告", revenue: "320万", target: "400万", rate: 80, share: 2.6, yoy: "+6.2%", mom: "-1.1%", merchants: 890, arpu: "84元", coverage: "38%" },
+  { name: "拼好饭推广", category: "效果广告", revenue: "260万", target: "280万", rate: 93, share: 2.1, yoy: "+45.8%", mom: "+12.3%", merchants: 1560, arpu: "58元", coverage: "67%" },
+  { name: "闪购流量加速包", category: "效果广告", revenue: "190万", target: "220万", rate: 86, share: 1.6, yoy: "+52.1%", mom: "+15.7%", merchants: 420, arpu: "94元", coverage: "18%" },
+  { name: "闪购一站式", category: "效果广告", revenue: "420万", target: "450万", rate: 93, share: 3.4, yoy: "+40.2%", mom: "+10.5%", merchants: 680, arpu: "110元", coverage: "29%" },
+  { name: "中小一站式", category: "效果广告", revenue: "680万", target: "800万", rate: 85, share: 5.6, yoy: "+16.8%", mom: "+2.8%", merchants: 2400, arpu: "74元", coverage: "100%" },
+  { name: "营销魔方", category: "效果广告", revenue: "280万", target: "320万", rate: 88, share: 2.3, yoy: "+25.4%", mom: "+7.2%", merchants: 450, arpu: "110元", coverage: "19%" },
+  { name: "津贴联盟", category: "效果广告", revenue: "350万", target: "380万", rate: 92, share: 2.9, yoy: "+11.5%", mom: "+1.8%", merchants: 1200, arpu: "75元", coverage: "51%" },
+  { name: "营销活动", category: "效果广告", revenue: "420万", target: "500万", rate: 84, share: 3.4, yoy: "+9.8%", mom: "+2.6%", merchants: 890, arpu: "96元", coverage: "38%" },
+  { name: "赏金联盟", category: "效果广告", revenue: "190万", target: "250万", rate: 76, share: 1.6, yoy: "+8.8%", mom: "+0.9%", merchants: 680, arpu: "74元", coverage: "29%" },
+  { name: "袋鼠店长", category: "增值产品", revenue: "520万", target: "550万", rate: 95, share: 4.3, yoy: "+10.2%", mom: "+1.5%", merchants: 3200, arpu: "56元", coverage: "100%" },
+  { name: "金字招牌", category: "增值产品", revenue: "310万", target: "360万", rate: 86, share: 2.5, yoy: "+13.4%", mom: "+3.2%", merchants: 560, arpu: "104元", coverage: "24%" },
+  { name: "服务市场", category: "增值产品", revenue: "120万", target: "140万", rate: 86, share: 1.0, yoy: "+6.8%", mom: "+1.2%", merchants: 620, arpu: "61元", coverage: "26%" },
+  { name: "应用市场", category: "增值产品", revenue: "80万", target: "100万", rate: 80, share: 0.7, yoy: "+12.3%", mom: "+2.5%", merchants: 380, arpu: "64元", coverage: "16%" },
+  { name: "跨店购", category: "增值产品", revenue: "60万", target: "80万", rate: 75, share: 0.5, yoy: "+20.1%", mom: "+5.3%", merchants: 240, arpu: "70元", coverage: "10%" },
+  { name: "异业CPT", category: "增值产品", revenue: "40万", target: "50万", rate: 80, share: 0.3, yoy: "+8.5%", mom: "+1.8%", merchants: 120, arpu: "80元", coverage: "5%" },
+  { name: "流量助手", category: "省钱产品", revenue: "180万", target: "200万", rate: 90, share: 1.5, yoy: "+16.5%", mom: "+3.8%", merchants: 1100, arpu: "56元", coverage: "47%" },
+  { name: "铂金展位CPM", category: "品宣产品", revenue: "580万", target: "700万", rate: 83, share: 4.7, yoy: "+8.9%", mom: "+1.2%", merchants: 320, arpu: "188元", coverage: "14%" },
+  { name: "铂金展位CPT", category: "品宣产品", revenue: "420万", target: "520万", rate: 81, share: 3.4, yoy: "+5.3%", mom: "-0.8%", merchants: 180, arpu: "214元", coverage: "8%" },
+  { name: "铂金展位", category: "品宣产品", revenue: "340万", target: "400万", rate: 85, share: 2.8, yoy: "+11.2%", mom: "+2.1%", merchants: 240, arpu: "167元", coverage: "10%" },
+  { name: "品专品类词", category: "品宣产品", revenue: "280万", target: "350万", rate: 80, share: 2.3, yoy: "+7.6%", mom: "+0.5%", merchants: 110, arpu: "224元", coverage: "5%" },
+  { name: "品专品牌词", category: "品宣产品", revenue: "220万", target: "300万", rate: 73, share: 1.8, yoy: "-3.2%", mom: "-2.1%", merchants: 80, arpu: "232元", coverage: "3%" },
+  { name: "品牌装修", category: "品宣产品", revenue: "180万", target: "240万", rate: 75, share: 1.5, yoy: "+4.1%", mom: "-1.3%", merchants: 420, arpu: "92元", coverage: "18%" },
+  { name: "首页列表卡片", category: "品宣产品", revenue: "240万", target: "280万", rate: 86, share: 2.0, yoy: "+19.6%", mom: "+4.8%", merchants: 380, arpu: "111元", coverage: "16%" },
 ];
+
+/* 外卖产品颜色映射（必须在 waimaiProductRevenue 之后） */
+const waimaiProductColorMap = {};
+waimaiProductRevenue.forEach((p, i) => {
+  waimaiProductColorMap[p.name] = WAIMAI_PRODUCT_COLORS[i];
+});
+const waimaiColorFor = (product) => waimaiProductColorMap[product.name] || "#94A3B8";
 
 /* ================================================================== */
 /* 到餐产品收入数据（5个消耗类型）                                      */
 /* ================================================================== */
 const daocanProductRevenue = [
-  { name: "推广通 (CPC)", revenue: "3,820万", target: "4,300万", rate: 89, share: 45.2, yoy: "+12.1%", mom: "+2.5%", merchants: 820, arpu: "4.66万", coverage: "80%" },
-  { name: "订单通 (CPS)", revenue: "1,680万", target: "1,500万", rate: 112, share: 19.9, yoy: "+22.4%", mom: "+6.1%", merchants: 990, arpu: "1.70万", coverage: "88%" },
-  { name: "置顶卡等 (CPT)", revenue: "980万", target: "1,200万", rate: 82, share: 11.6, yoy: "+5.8%", mom: "-0.5%", merchants: 340, arpu: "2.88万", coverage: "30%" },
-  { name: "智选展位等 (CPM)", revenue: "1,240万", target: "1,500万", rate: 83, share: 14.7, yoy: "+8.7%", mom: "+1.4%", merchants: 420, arpu: "2.95万", coverage: "37%" },
-  { name: "商户通/智能掌柜 (MEM)", revenue: "720万", target: "800万", rate: 90, share: 8.5, yoy: "+15.3%", mom: "+3.2%", merchants: 560, arpu: "1.29万", coverage: "50%" },
+  { name: "推广通 (CPC)", revenue: "3,820万", target: "4,300万", rate: 89, share: 45.2, yoy: "+12.1%", mom: "+2.5%", merchants: 820, arpu: "298元", coverage: "80%" },
+  { name: "订单通 (CPS)", revenue: "1,680万", target: "1,500万", rate: 112, share: 19.9, yoy: "+22.4%", mom: "+6.1%", merchants: 990, arpu: "183元", coverage: "88%" },
+  { name: "置顶卡等 (CPT)", revenue: "980万", target: "1,200万", rate: 82, share: 11.6, yoy: "+5.8%", mom: "-0.5%", merchants: 340, arpu: "238元", coverage: "30%" },
+  { name: "智选展位等 (CPM)", revenue: "1,240万", target: "1,500万", rate: 83, share: 14.7, yoy: "+8.7%", mom: "+1.4%", merchants: 420, arpu: "240元", coverage: "37%" },
+  { name: "商户通/智能掌柜 (MEM)", revenue: "720万", target: "800万", rate: 90, share: 8.5, yoy: "+15.3%", mom: "+3.2%", merchants: 560, arpu: "159元", coverage: "50%" },
+];
+
+/* ================================================================== */
+/* 产品×商家分层 交叉数据（外卖 TOP8 × P0-P3）                          */
+/* ================================================================== */
+const waimaiProductTierRows = [
+  // 点金推广
+  { product: "点金推广", tier: "P0", category: "效果广告", revenue: "820万", yoy: "+16.2%", mom: "+4.1%", tierShare: "44.1%", totalShare: "6.7%", gtv: "6,800万", arpu: "190元", penetration: "82%" },
+  { product: "点金推广", tier: "P1", category: "效果广告", revenue: "520万", yoy: "+12.8%", mom: "+2.6%", tierShare: "28.0%", totalShare: "4.3%", gtv: "3,900万", arpu: "137元", penetration: "65%" },
+  { product: "点金推广", tier: "P2", category: "效果广告", revenue: "340万", yoy: "+10.5%", mom: "+1.8%", tierShare: "18.3%", totalShare: "2.8%", gtv: "2,200万", arpu: "107元", penetration: "42%" },
+  { product: "点金推广", tier: "P3", category: "效果广告", revenue: "180万", yoy: "+8.1%", mom: "+0.5%", tierShare: "9.7%", totalShare: "1.5%", gtv: "1,000万", arpu: "79元", penetration: "18%" },
+  // 全站推广（竞价）
+  { product: "全站推广（竞价）", tier: "P0", category: "效果广告", revenue: "580万", yoy: "+32.1%", mom: "+9.5%", tierShare: "46.8%", totalShare: "4.7%", gtv: "4,200万", arpu: "205元", penetration: "68%" },
+  { product: "全站推广（竞价）", tier: "P1", category: "效果广告", revenue: "340万", yoy: "+26.5%", mom: "+7.2%", tierShare: "27.4%", totalShare: "2.8%", gtv: "2,100万", arpu: "158元", penetration: "45%" },
+  { product: "全站推广（竞价）", tier: "P2", category: "效果广告", revenue: "220万", yoy: "+22.3%", mom: "+5.8%", tierShare: "17.7%", totalShare: "1.8%", gtv: "1,200万", arpu: "119元", penetration: "28%" },
+  { product: "全站推广（竞价）", tier: "P3", category: "效果广告", revenue: "100万", yoy: "+18.6%", mom: "+3.2%", tierShare: "8.1%", totalShare: "0.8%", gtv: "480万", arpu: "86元", penetration: "12%" },
+  // 订单通
+  { product: "订单通", tier: "P0", category: "效果广告", revenue: "680万", yoy: "+25.4%", mom: "+6.8%", tierShare: "44.7%", totalShare: "5.6%", gtv: "5,600万", arpu: "173元", penetration: "91%" },
+  { product: "订单通", tier: "P1", category: "效果广告", revenue: "420万", yoy: "+20.1%", mom: "+4.5%", tierShare: "27.6%", totalShare: "3.4%", gtv: "3,100万", arpu: "127元", penetration: "78%" },
+  { product: "订单通", tier: "P2", category: "效果广告", revenue: "280万", yoy: "+18.2%", mom: "+3.6%", tierShare: "18.4%", totalShare: "2.3%", gtv: "1,800万", arpu: "101元", penetration: "56%" },
+  { product: "订单通", tier: "P3", category: "效果广告", revenue: "140万", yoy: "+12.5%", mom: "+1.8%", tierShare: "9.2%", totalShare: "1.1%", gtv: "800万", arpu: "74元", penetration: "25%" },
+  // 超级流量卡
+  { product: "超级流量卡", tier: "P0", category: "效果广告", revenue: "360万", yoy: "+22.1%", mom: "+3.8%", tierShare: "46.2%", totalShare: "2.9%", gtv: "2,800万", arpu: "163元", penetration: "55%" },
+  { product: "超级流量卡", tier: "P1", category: "效果广告", revenue: "220万", yoy: "+17.5%", mom: "+2.1%", tierShare: "28.2%", totalShare: "1.8%", gtv: "1,500万", arpu: "124元", penetration: "38%" },
+  { product: "超级流量卡", tier: "P2", category: "效果广告", revenue: "140万", yoy: "+14.2%", mom: "+1.5%", tierShare: "17.9%", totalShare: "1.1%", gtv: "850万", arpu: "94元", penetration: "22%" },
+  { product: "超级流量卡", tier: "P3", category: "效果广告", revenue: "60万", yoy: "+9.8%", mom: "+0.3%", tierShare: "7.7%", totalShare: "0.5%", gtv: "320万", arpu: "66元", penetration: "8%" },
+  // 袋鼠店长
+  { product: "袋鼠店长", tier: "P0", category: "增值产品", revenue: "210万", yoy: "+12.5%", mom: "+2.1%", tierShare: "40.4%", totalShare: "1.7%", gtv: "1,800万", arpu: "74元", penetration: "100%" },
+  { product: "袋鼠店长", tier: "P1", category: "增值产品", revenue: "150万", yoy: "+10.2%", mom: "+1.5%", tierShare: "28.8%", totalShare: "1.2%", gtv: "1,200万", arpu: "59元", penetration: "100%" },
+  { product: "袋鼠店长", tier: "P2", category: "增值产品", revenue: "100万", yoy: "+8.8%", mom: "+0.8%", tierShare: "19.2%", totalShare: "0.8%", gtv: "700万", arpu: "48元", penetration: "100%" },
+  { product: "袋鼠店长", tier: "P3", category: "增值产品", revenue: "60万", yoy: "+6.1%", mom: "+0.2%", tierShare: "11.5%", totalShare: "0.5%", gtv: "380万", arpu: "40元", penetration: "100%" },
+  // 铂金展位CPM
+  { product: "铂金展位CPM", tier: "P0", category: "品宣产品", revenue: "320万", yoy: "+10.5%", mom: "+1.8%", tierShare: "55.2%", totalShare: "2.6%", gtv: "2,200万", arpu: "250元", penetration: "28%" },
+  { product: "铂金展位CPM", tier: "P1", category: "品宣产品", revenue: "150万", yoy: "+7.2%", mom: "+0.5%", tierShare: "25.9%", totalShare: "1.2%", gtv: "900万", arpu: "190元", penetration: "12%" },
+  { product: "铂金展位CPM", tier: "P2", category: "品宣产品", revenue: "80万", yoy: "+5.1%", mom: "-0.3%", tierShare: "13.8%", totalShare: "0.7%", gtv: "420万", arpu: "143元", penetration: "5%" },
+  { product: "铂金展位CPM", tier: "P3", category: "品宣产品", revenue: "30万", yoy: "+2.8%", mom: "-1.2%", tierShare: "5.2%", totalShare: "0.2%", gtv: "130万", arpu: "104元", penetration: "2%" },
+  // 订单通（全站）
+  { product: "订单通（全站）", tier: "P0", category: "效果广告", revenue: "310万", yoy: "+40.2%", mom: "+10.5%", tierShare: "45.6%", totalShare: "2.5%", gtv: "2,400万", arpu: "181元", penetration: "52%" },
+  { product: "订单通（全站）", tier: "P1", category: "效果广告", revenue: "180万", yoy: "+33.5%", mom: "+8.2%", tierShare: "26.5%", totalShare: "1.5%", gtv: "1,200万", arpu: "136元", penetration: "32%" },
+  { product: "订单通（全站）", tier: "P2", category: "效果广告", revenue: "120万", yoy: "+28.8%", mom: "+6.1%", tierShare: "17.6%", totalShare: "1.0%", gtv: "680万", arpu: "110元", penetration: "18%" },
+  { product: "订单通（全站）", tier: "P3", category: "效果广告", revenue: "70万", yoy: "+22.1%", mom: "+3.5%", tierShare: "10.3%", totalShare: "0.6%", gtv: "350万", arpu: "83元", penetration: "8%" },
+  // 中小一站式
+  { product: "中小一站式", tier: "P0", category: "效果广告", revenue: "180万", yoy: "+18.5%", mom: "+3.2%", tierShare: "26.5%", totalShare: "1.5%", gtv: "1,500万", arpu: "91元", penetration: "100%" },
+  { product: "中小一站式", tier: "P1", category: "效果广告", revenue: "200万", yoy: "+16.2%", mom: "+2.8%", tierShare: "29.4%", totalShare: "1.6%", gtv: "1,600万", arpu: "83元", penetration: "100%" },
+  { product: "中小一站式", tier: "P2", category: "效果广告", revenue: "180万", yoy: "+15.8%", mom: "+2.5%", tierShare: "26.5%", totalShare: "1.5%", gtv: "1,400万", arpu: "71元", penetration: "100%" },
+  { product: "中小一站式", tier: "P3", category: "效果广告", revenue: "120万", yoy: "+14.1%", mom: "+1.8%", tierShare: "17.6%", totalShare: "1.0%", gtv: "850万", arpu: "54元", penetration: "100%" },
+  // 拼好饭推广
+  { product: "拼好饭推广", tier: "P0", category: "效果广告", revenue: "80万", yoy: "+52.1%", mom: "+13.5%", tierShare: "30.8%", totalShare: "0.7%", gtv: "600万", arpu: "66元", penetration: "68%" },
+  { product: "拼好饭推广", tier: "P1", category: "效果广告", revenue: "70万", yoy: "+48.5%", mom: "+12.1%", tierShare: "26.9%", totalShare: "0.6%", gtv: "480万", arpu: "56元", penetration: "55%" },
+  { product: "拼好饭推广", tier: "P2", category: "效果广告", revenue: "60万", yoy: "+42.3%", mom: "+10.8%", tierShare: "23.1%", totalShare: "0.5%", gtv: "360万", arpu: "48元", penetration: "42%" },
+  { product: "拼好饭推广", tier: "P3", category: "效果广告", revenue: "50万", yoy: "+38.6%", mom: "+9.5%", tierShare: "19.2%", totalShare: "0.4%", gtv: "280万", arpu: "42元", penetration: "28%" },
+];
+
+/* ================================================================== */
+/* 产品×商家分层 交叉数据（到餐 5类 × P0-P3）                            */
+/* ================================================================== */
+const daocanProductTierRows = [
+  // 推广通 (CPC)
+  { product: "推广通 (CPC)", tier: "P0", category: "推广通", revenue: "1,820万", yoy: "+14.5%", mom: "+3.2%", tierShare: "47.6%", totalShare: "21.5%", gtv: "12,000万", arpu: "298元", penetration: "85%" },
+  { product: "推广通 (CPC)", tier: "P1", category: "推广通", revenue: "980万", yoy: "+11.2%", mom: "+2.1%", tierShare: "25.7%", totalShare: "11.6%", gtv: "5,800万", arpu: "285元", penetration: "62%" },
+  { product: "推广通 (CPC)", tier: "P2", category: "推广通", revenue: "620万", yoy: "+8.5%", mom: "+1.2%", tierShare: "16.2%", totalShare: "7.3%", gtv: "3,200万", arpu: "238元", penetration: "38%" },
+  { product: "推广通 (CPC)", tier: "P3", category: "推广通", revenue: "400万", yoy: "+5.8%", mom: "-0.3%", tierShare: "10.5%", totalShare: "4.7%", gtv: "1,800万", arpu: "189元", penetration: "15%" },
+  // 订单通 (CPS)
+  { product: "订单通 (CPS)", tier: "P0", category: "订单通", revenue: "780万", yoy: "+25.4%", mom: "+7.5%", tierShare: "46.4%", totalShare: "9.2%", gtv: "6,500万", arpu: "236元", penetration: "92%" },
+  { product: "订单通 (CPS)", tier: "P1", category: "订单通", revenue: "420万", yoy: "+20.8%", mom: "+5.2%", tierShare: "25.0%", totalShare: "5.0%", gtv: "3,200万", arpu: "173元", penetration: "78%" },
+  { product: "订单通 (CPS)", tier: "P2", category: "订单通", revenue: "280万", yoy: "+18.2%", mom: "+4.1%", tierShare: "16.7%", totalShare: "3.3%", gtv: "1,900万", arpu: "134元", penetration: "55%" },
+  { product: "订单通 (CPS)", tier: "P3", category: "订单通", revenue: "200万", yoy: "+15.1%", mom: "+2.8%", tierShare: "11.9%", totalShare: "2.4%", gtv: "1,100万", arpu: "97元", penetration: "25%" },
+  // 置顶卡等 (CPT)
+  { product: "置顶卡等 (CPT)", tier: "P0", category: "置顶卡", revenue: "520万", yoy: "+8.2%", mom: "+0.5%", tierShare: "53.1%", totalShare: "6.2%", gtv: "3,200万", arpu: "285元", penetration: "35%" },
+  { product: "置顶卡等 (CPT)", tier: "P1", category: "置顶卡", revenue: "240万", yoy: "+5.5%", mom: "-0.8%", tierShare: "24.5%", totalShare: "2.8%", gtv: "1,300万", arpu: "236元", penetration: "15%" },
+  { product: "置顶卡等 (CPT)", tier: "P2", category: "置顶卡", revenue: "140万", yoy: "+3.2%", mom: "-1.5%", tierShare: "14.3%", totalShare: "1.7%", gtv: "650万", arpu: "180元", penetration: "6%" },
+  { product: "置顶卡等 (CPT)", tier: "P3", category: "置顶卡", revenue: "80万", yoy: "+1.8%", mom: "-2.2%", tierShare: "8.2%", totalShare: "0.9%", gtv: "320万", arpu: "129元", penetration: "2%" },
+  // 智选展位等 (CPM)
+  { product: "智选展位等 (CPM)", tier: "P0", category: "智选展位", revenue: "620万", yoy: "+10.5%", mom: "+2.1%", tierShare: "50.0%", totalShare: "7.3%", gtv: "4,000万", arpu: "289元", penetration: "42%" },
+  { product: "智选展位等 (CPM)", tier: "P1", category: "智选展位", revenue: "310万", yoy: "+7.8%", mom: "+1.2%", tierShare: "25.0%", totalShare: "3.7%", gtv: "1,800万", arpu: "240元", penetration: "20%" },
+  { product: "智选展位等 (CPM)", tier: "P2", category: "智选展位", revenue: "190万", yoy: "+5.5%", mom: "+0.3%", tierShare: "15.3%", totalShare: "2.2%", gtv: "950万", arpu: "187元", penetration: "8%" },
+  { product: "智选展位等 (CPM)", tier: "P3", category: "智选展位", revenue: "120万", yoy: "+3.2%", mom: "-0.8%", tierShare: "9.7%", totalShare: "1.4%", gtv: "520万", arpu: "136元", penetration: "3%" },
+  // 商户通/智能掌柜 (MEM)
+  { product: "商户通/智能掌柜 (MEM)", tier: "P0", category: "商户通", revenue: "320万", yoy: "+18.5%", mom: "+4.2%", tierShare: "44.4%", totalShare: "3.8%", gtv: "2,200万", arpu: "205元", penetration: "58%" },
+  { product: "商户通/智能掌柜 (MEM)", tier: "P1", category: "商户通", revenue: "180万", yoy: "+14.2%", mom: "+2.8%", tierShare: "25.0%", totalShare: "2.1%", gtv: "1,100万", arpu: "163元", penetration: "35%" },
+  { product: "商户通/智能掌柜 (MEM)", tier: "P2", category: "商户通", revenue: "130万", yoy: "+11.5%", mom: "+1.8%", tierShare: "18.1%", totalShare: "1.5%", gtv: "720万", arpu: "129元", penetration: "18%" },
+  { product: "商户通/智能掌柜 (MEM)", tier: "P3", category: "商户通", revenue: "90万", yoy: "+8.8%", mom: "+0.5%", tierShare: "12.5%", totalShare: "1.1%", gtv: "420万", arpu: "97元", penetration: "8%" },
 ];
 
 /* ================================================================== */
 /* 外卖分区域数据（按品类聚合）                                         */
 /* ================================================================== */
 const waimaiRegionRows = [
-  { region: "华东区", "竞价广告": "1,820万", "效果广告": "1,240万", "品牌广告": "620万", "一站式": "580万", "营销活动": "420万", "工具服务": "380万", total: "5,060万" },
-  { region: "华南区", "竞价广告": "1,380万", "效果广告": "980万", "品牌广告": "480万", "一站式": "420万", "营销活动": "340万", "工具服务": "280万", total: "3,880万" },
-  { region: "华北区", "竞价广告": "1,020万", "效果广告": "780万", "品牌广告": "380万", "一站式": "320万", "营销活动": "260万", "工具服务": "220万", total: "2,980万" },
-  { region: "西南区", "竞价广告": "780万", "效果广告": "580万", "品牌广告": "280万", "一站式": "240万", "营销活动": "180万", "工具服务": "160万", total: "2,220万" },
-  { region: "东北区", "竞价广告": "320万", "效果广告": "240万", "品牌广告": "120万", "一站式": "100万", "营销活动": "80万", "工具服务": "60万", total: "920万" },
+  { region: "京津冀区域", "效果广告": "3,660万", "增值产品": "800万", "省钱产品": "280万", "品宣产品": "1,320万", total: "6,060万" },
+  { region: "江苏区域", "效果广告": "2,800万", "增值产品": "620万", "省钱产品": "220万", "品宣产品": "1,000万", total: "4,640万" },
+  { region: "粤海区域", "效果广告": "2,180万", "增值产品": "480万", "省钱产品": "180万", "品宣产品": "780万", total: "3,620万" },
+  { region: "川藏区域", "效果广告": "1,660万", "增值产品": "360万", "省钱产品": "140万", "品宣产品": "580万", total: "2,740万" },
+  { region: "山东区域", "效果广告": "1,100万", "增值产品": "240万", "省钱产品": "90万", "品宣产品": "380万", total: "1,810万" },
+  { region: "辽吉区域", "效果广告": "680万", "增值产品": "150万", "省钱产品": "60万", "品宣产品": "230万", total: "1,120万" },
+];
+
+/* 外卖分城市数据（按品类聚合，抽样城市） */
+const waimaiCityRows = [
+  { city: "北京", "效果广告": "1,860万", "增值产品": "420万", "省钱产品": "150万", "品宣产品": "680万", total: "3,110万" },
+  { city: "天津", "效果广告": "980万", "增值产品": "220万", "省钱产品": "70万", "品宣产品": "320万", total: "1,590万" },
+  { city: "南京", "效果广告": "1,120万", "增值产品": "250万", "省钱产品": "90万", "品宣产品": "420万", total: "1,880万" },
+  { city: "苏州", "效果广告": "820万", "增值产品": "180万", "省钱产品": "60万", "品宣产品": "280万", total: "1,340万" },
+  { city: "无锡", "效果广告": "480万", "增值产品": "110万", "省钱产品": "40万", "品宣产品": "180万", total: "810万" },
+  { city: "广州", "效果广告": "980万", "增值产品": "220万", "省钱产品": "80万", "品宣产品": "360万", total: "1,640万" },
+  { city: "深圳", "效果广告": "720万", "增值产品": "160万", "省钱产品": "60万", "品宣产品": "260万", total: "1,200万" },
+  { city: "佛山", "效果广告": "280万", "增值产品": "60万", "省钱产品": "20万", "品宣产品": "100万", total: "460万" },
+  { city: "成都", "效果广告": "820万", "增值产品": "180万", "省钱产品": "70万", "品宣产品": "300万", total: "1,370万" },
+  { city: "重庆", "效果广告": "560万", "增值产品": "120万", "省钱产品": "50万", "品宣产品": "200万", total: "930万" },
+  { city: "济南", "效果广告": "420万", "增值产品": "90万", "省钱产品": "30万", "品宣产品": "160万", total: "700万" },
+  { city: "青岛", "效果广告": "380万", "增值产品": "80万", "省钱产品": "30万", "品宣产品": "140万", total: "630万" },
+  { city: "沈阳", "效果广告": "280万", "增值产品": "60万", "省钱产品": "20万", "品宣产品": "100万", total: "460万" },
+  { city: "大连", "效果广告": "220万", "增值产品": "50万", "省钱产品": "20万", "品宣产品": "80万", total: "370万" },
+];
+
+/* 到餐分城市数据（按消耗类型，抽样城市） */
+const daocanCityRows = [
+  { city: "北京", "推广通 (CPC)": "880万", "订单通 (CPS)": "380万", "置顶卡等 (CPT)": "220万", "智选展位等 (CPM)": "280万", "商户通/智能掌柜 (MEM)": "160万", total: "1,920万" },
+  { city: "天津", "推广通 (CPC)": "480万", "订单通 (CPS)": "210万", "置顶卡等 (CPT)": "120万", "智选展位等 (CPM)": "160万", "商户通/智能掌柜 (MEM)": "90万", total: "1,060万" },
+  { city: "南京", "推广通 (CPC)": "520万", "订单通 (CPS)": "230万", "置顶卡等 (CPT)": "130万", "智选展位等 (CPM)": "170万", "商户通/智能掌柜 (MEM)": "100万", total: "1,150万" },
+  { city: "苏州", "推广通 (CPC)": "380万", "订单通 (CPS)": "170万", "置顶卡等 (CPT)": "100万", "智选展位等 (CPM)": "130万", "商户通/智能掌柜 (MEM)": "70万", total: "850万" },
+  { city: "无锡", "推广通 (CPC)": "220万", "订单通 (CPS)": "100万", "置顶卡等 (CPT)": "60万", "智选展位等 (CPM)": "70万", "商户通/智能掌柜 (MEM)": "40万", total: "490万" },
+  { city: "广州", "推广通 (CPC)": "460万", "订单通 (CPS)": "200万", "置顶卡等 (CPT)": "120万", "智选展位等 (CPM)": "160万", "商户通/智能掌柜 (MEM)": "90万", total: "1,030万" },
+  { city: "深圳", "推广通 (CPC)": "340万", "订单通 (CPS)": "150万", "置顶卡等 (CPT)": "90万", "智选展位等 (CPM)": "120万", "商户通/智能掌柜 (MEM)": "70万", total: "770万" },
+  { city: "佛山", "推广通 (CPC)": "140万", "订单通 (CPS)": "60万", "置顶卡等 (CPT)": "40万", "智选展位等 (CPM)": "50万", "商户通/智能掌柜 (MEM)": "30万", total: "320万" },
+  { city: "成都", "推广通 (CPC)": "380万", "订单通 (CPS)": "170万", "置顶卡等 (CPT)": "100万", "智选展位等 (CPM)": "130万", "商户通/智能掌柜 (MEM)": "80万", total: "860万" },
+  { city: "重庆", "推广通 (CPC)": "260万", "订单通 (CPS)": "110万", "置顶卡等 (CPT)": "70万", "智选展位等 (CPM)": "90万", "商户通/智能掌柜 (MEM)": "50万", total: "580万" },
+  { city: "济南", "推广通 (CPC)": "200万", "订单通 (CPS)": "90万", "置顶卡等 (CPT)": "50万", "智选展位等 (CPM)": "70万", "商户通/智能掌柜 (MEM)": "40万", total: "450万" },
+  { city: "青岛", "推广通 (CPC)": "180万", "订单通 (CPS)": "80万", "置顶卡等 (CPT)": "50万", "智选展位等 (CPM)": "60万", "商户通/智能掌柜 (MEM)": "30万", total: "400万" },
+  { city: "沈阳", "推广通 (CPC)": "140万", "订单通 (CPS)": "60万", "置顶卡等 (CPT)": "40万", "智选展位等 (CPM)": "50万", "商户通/智能掌柜 (MEM)": "30万", total: "320万" },
+  { city: "大连", "推广通 (CPC)": "110万", "订单通 (CPS)": "50万", "置顶卡等 (CPT)": "30万", "智选展位等 (CPM)": "40万", "商户通/智能掌柜 (MEM)": "20万", total: "250万" },
 ];
 
 /* 到餐分区域数据（按消耗类型） */
 const daocanRegionRows = [
-  { region: "华东区", "推广通 (CPC)": "1,720万", "订单通 (CPS)": "760万", "置顶卡等 (CPT)": "440万", "智选展位等 (CPM)": "560万", "商户通/智能掌柜 (MEM)": "320万", total: "3,800万" },
-  { region: "华南区", "推广通 (CPC)": "1,380万", "订单通 (CPS)": "610万", "置顶卡等 (CPT)": "350万", "智选展位等 (CPM)": "450万", "商户通/智能掌柜 (MEM)": "260万", total: "3,050万" },
-  { region: "华北区", "推广通 (CPC)": "1,020万", "订单通 (CPS)": "450万", "置顶卡等 (CPT)": "280万", "智选展位等 (CPM)": "370万", "商户通/智能掌柜 (MEM)": "210万", total: "2,330万" },
-  { region: "西南区", "推广通 (CPC)": "820万", "订单通 (CPS)": "360万", "置顶卡等 (CPT)": "220万", "智选展位等 (CPM)": "290万", "商户通/智能掌柜 (MEM)": "170万", total: "1,860万" },
-  { region: "东北区", "推广通 (CPC)": "380万", "订单通 (CPS)": "170万", "置顶卡等 (CPT)": "100万", "智选展位等 (CPM)": "130万", "商户通/智能掌柜 (MEM)": "80万", total: "860万" },
+  { region: "京津冀区域", "推广通 (CPC)": "1,720万", "订单通 (CPS)": "760万", "置顶卡等 (CPT)": "440万", "智选展位等 (CPM)": "560万", "商户通/智能掌柜 (MEM)": "320万", total: "3,800万" },
+  { region: "江苏区域", "推广通 (CPC)": "1,380万", "订单通 (CPS)": "610万", "置顶卡等 (CPT)": "350万", "智选展位等 (CPM)": "450万", "商户通/智能掌柜 (MEM)": "260万", total: "3,050万" },
+  { region: "粤海区域", "推广通 (CPC)": "1,020万", "订单通 (CPS)": "450万", "置顶卡等 (CPT)": "280万", "智选展位等 (CPM)": "370万", "商户通/智能掌柜 (MEM)": "210万", total: "2,330万" },
+  { region: "川藏区域", "推广通 (CPC)": "820万", "订单通 (CPS)": "360万", "置顶卡等 (CPT)": "220万", "智选展位等 (CPM)": "290万", "商户通/智能掌柜 (MEM)": "170万", total: "1,860万" },
+  { region: "山东区域", "推广通 (CPC)": "520万", "订单通 (CPS)": "240万", "置顶卡等 (CPT)": "130万", "智选展位等 (CPM)": "170万", "商户通/智能掌柜 (MEM)": "100万", total: "1,160万" },
+  { region: "辽吉区域", "推广通 (CPC)": "380万", "订单通 (CPS)": "170万", "置顶卡等 (CPT)": "100万", "智选展位等 (CPM)": "130万", "商户通/智能掌柜 (MEM)": "80万", total: "860万" },
 ];
 
 /* ================================================================== */
@@ -273,22 +380,22 @@ const daocanTargetRows = [
 const aiAnalysisDataMap = {
   waimai: {
     platform_admin: [
-      { title: "竞价广告为第一大品类", text: "点金推广+全站推广+超级流量卡合计占比31.7%，达成率89-93%，是外卖广告收入核心支柱" },
-      { title: "订单通系列增长强劲", text: "订单通+订单通（全站）合计占比18%，YoY+22-36%，闪购流量加速包YoY+52%为全品类增速最快，建议加大推广" },
-      { title: "品牌广告达成率偏低", text: "品专品牌词达成率73%、品牌装修75%，受大客户预算缩减影响，建议拓展中小品牌客户弥补缺口" },
-      { title: "工具类产品稳定", text: "袋鼠店长覆盖率100%贡献520万收入，是稳定的工具类收入来源。跨店购和应用市场尚在早期，增长空间大" },
-      { title: "营销活动品类机会", text: "营销魔方YoY+25.4%增速亮眼但覆盖商户仅450家，建议从营销活动商户中交叉转化" },
+      { title: "效果广告为第一大品类", text: "效果广告收入合计占比述70%+，是外卖广告收入核心支柱。点金推广+订单通两大头部产品达成率均起90%" },
+      { title: "订单通系列增长强劲", text: "订单通+订单通（全站）合计占比18%，YoY+22-36%，闪购流量加速包YoY+52%为效果广告增速最快，建议加大推广" },
+      { title: "品宣产品达成率偏低", text: "品宣产品整体达成率较高，但品专品牌词仅73%、品牌装修75%，受大客户预算缩减影响，建议拓展中小品牌客户弥补缺口" },
+      { title: "增值产品稳定", text: "袋鼠店长覆盖率100%贡献520万收入，是稳定的增值类收入来源。跨店购和应用市场尚在早期，增长空间大" },
+      { title: "省钱产品机会", text: "流量助手YoY+16.5%增长稳健但ARPU仅0.16万，建议引导商户升级更高阶的流量服务包" },
     ],
     biz_manager: [
-      { title: "区域产品结构差异", text: "华东区竞价广告收入1,820万领先，东北区仅320万。建议将华东运营经验复制到东北" },
+      { title: "区域产品结构差异", text: "京津冀区域效果广告收入3,660万领先，辽吉区域仅680万。建议将京津冀运营经验复制到辽吉" },
       { title: "闪购产品线机会", text: "闪购一站式YoY+40.2%、闪购流量加速包YoY+52.1%，是重要增量来源，建议重点推进闪购产品开通" },
       { title: "拼好饭推广爆发增长", text: "YoY+45.8%为效果广告增速最快产品，覆盖1,560家商户但ARPU仅0.17万，建议引导商户提升推广预算" },
-      { title: "品牌广告需突破", text: "华北区品牌广告达成率最低，建议重点跟进北京的品牌客户预算恢复情况" },
+      { title: "品宣产品需突破", text: "川藏区域品宣产品达成率最低，建议重点跟进成都的品牌客户预算恢复情况" },
     ],
     partner: [
       { title: "核心产品开通率", text: "点金推广开通率78%，订单通89%，建议优先推动剩余22%商户开通点金推广" },
-      { title: "品牌广告开通率低", text: "品牌装修开通率仅18%，建议重点推进品牌类产品开通，预计可增收3-5万/月" },
-      { title: "工具类渗透", text: "袋鼠店长覆盖率最高但ARPU低，建议引导商户开通更高阶的流量助手服务" },
+      { title: "品宣产品开通率低", text: "品牌装修开通率仅18%，建议重点推进品宣类产品开通，预计可增收3-5万/月" },
+      { title: "增值产品渗透", text: "袋鼠店长覆盖率最高但ARPU低，建议引导商户开通更高阶的流量助手服务" },
       { title: "一站式产品推介", text: "中小一站式覆盖100%但ARPU仅0.28万，建议引导商户升级配置提升产出" },
     ],
     bd: [
@@ -307,10 +414,10 @@ const aiAnalysisDataMap = {
       { title: "智选展位(CPM)机会", text: "覆盖率仅37%，ARPU 2.95万为各品类最高，建议重点拓展品牌展位资源" },
     ],
     biz_manager: [
-      { title: "区域CPC表现", text: "华东区推广通收入1,720万领先，东北区仅380万。建议复制华东经验到东北" },
+      { title: "区域CPC表现", text: "京津冀区域推广通收入1,720万领先，辽吉区域仅380万。建议复制京津冀经验到辽吉" },
       { title: "CPS全面超额", text: "所有区域订单通达成率均超100%，是到餐最稳定增量品类" },
-      { title: "CPT区域性差异大", text: "华东区CPT达成率88%最高，东北区仅68%，需重点排查合作商执行力" },
-      { title: "MEM推广机会", text: "华北区商户通覆盖率最低，建议重点推进华北餐饮商户开通" },
+      { title: "CPT区域性差异大", text: "京津冀区域CPT达成率88%最高，辽吉区域仅68%，需重点排查合作商执行力" },
+      { title: "MEM推广机会", text: "川藏区域商户通覆盖率最低，建议重点推进川藏餐饮商户开通" },
     ],
     partner: [
       { title: "CPC开通率", text: "推广通开通率80%，建议优先推动剩余20%商户开通" },
@@ -363,11 +470,11 @@ const WaimaiProductView = () => {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(0);
+  const [regionViewMode, setRegionViewMode] = useState("region");
   const PAGE_SIZE = 10;
 
   const categories = useMemo(() => {
-    const cats = [...new Set(waimaiProductRevenue.map((r) => r.category))];
-    return cats;
+    return [...new Set(waimaiProductRevenue.map((r) => r.category))];
   }, []);
 
   const filtered = useMemo(() => {
@@ -384,14 +491,26 @@ const WaimaiProductView = () => {
   const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
   const paged = filtered.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
 
-  // 按品类聚合用于图表
-  const categoryAgg = useMemo(() => {
-    const map = {};
-    waimaiProductRevenue.forEach((r) => {
-      if (!map[r.category]) map[r.category] = { name: r.category, value: 0, color: waimaiColorFor({ category: r.category }) };
-      map[r.category].value += r.share;
+  // 产品收入占比（全部28个产品，每个独立颜色——表格行用）
+  const productShareAgg = useMemo(() => {
+    return waimaiProductRevenue.map((r) => ({ name: r.name, value: r.share, color: waimaiColorFor(r) }));
+  }, []);
+
+  // 产品收入占比（分组：7个重点产品 + 其他——图表用）
+  const productShareGrouped = useMemo(() => {
+    const highlight = ["点金推广", "营销魔方", "订单通（全站）", "津贴联盟", "流量助手", "全站推广（竞价）", "拼好饭推广"];
+    const colors = ["#2563EB", "#059669", "#0EA5E9", "#8B5CF6", "#F59E0B", "#EC4899", "#10B981", "#9CA3AF"];
+    let otherShare = 0;
+    const groups = [];
+    highlight.forEach((name, i) => {
+      const p = waimaiProductRevenue.find((r) => r.name === name);
+      if (p) groups.push({ name, value: p.share, color: colors[i] });
     });
-    return Object.values(map).sort((a, b) => b.value - a.value);
+    waimaiProductRevenue.forEach((r) => {
+      if (!highlight.includes(r.name)) otherShare += r.share;
+    });
+    groups.push({ name: "其他", value: parseFloat(otherShare.toFixed(1)), color: colors[7] });
+    return groups;
   }, []);
 
   const totalRevenue = waimaiProductRevenue.reduce((s, r) => s + parseAmount(r.revenue), 0);
@@ -399,18 +518,14 @@ const WaimaiProductView = () => {
   const overallRate = Math.round((totalRevenue / totalTarget) * 100);
   const totalMerchants = waimaiProductRevenue.reduce((s, r) => s + r.merchants, 0);
 
-  // 品类聚合目标
-  const categoryTargetAgg = useMemo(() => {
-    const map = {};
-    waimaiTargetRows.forEach((r) => {
-      const cat = WAIMAI_PRODUCTS.find((p) => p.name === r.product)?.category || "其他";
-      if (!map[cat]) map[cat] = { product: cat, target: 0, achieved: 0, rate: 0, gap: 0, count: 0 };
-      map[cat].target += parseAmount(r.target);
-      map[cat].achieved += parseAmount(r.achieved);
-      map[cat].gap += parseAmount(r.gap);
-      map[cat].count += 1;
-    });
-    return Object.values(map).map((r) => ({ ...r, rate: Math.round((r.achieved / r.target) * 100), target: `${r.target.toLocaleString()}万`, achieved: `${r.achieved.toLocaleString()}万`, gap: `${r.gap}万`, yoy: "+12.5%", status: r.rate >= 100 ? "已达成" : r.rate >= 85 ? "进行中" : "预警" }));
+  // 收入排名 Top 5
+  const revenueTop5 = useMemo(() => {
+    return [...waimaiProductRevenue].sort((a, b) => parseAmount(b.revenue) - parseAmount(a.revenue)).slice(0, 5);
+  }, []);
+
+  // 产品 ARPU 排名
+  const productArpuList = useMemo(() => {
+    return [...waimaiProductRevenue].sort((a, b) => parseAmount(b.arpu) - parseAmount(a.arpu)).slice(0, 8);
   }, []);
 
   return (
@@ -437,187 +552,245 @@ const WaimaiProductView = () => {
         ))}
       </div>
 
-      {/* 图表区域 */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
-        {/* 品类占比图 */}
-        <Card className="border-none shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-2">各品类收入占比</p>
-            <ProductShareChart data={categoryAgg} />
-            <div className="flex flex-wrap gap-3 mt-2 justify-center">
-              {categoryAgg.map((r) => (
-                <div key={r.name} className="flex items-center gap-1.5">
-                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: r.color }} />
-                  <span className="text-xs text-gray-600">{r.name} {r.value.toFixed(1)}%</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      {/* 产品收入明细 + 分区域产品 — 双 Tab */}
+      <Tabs defaultValue="detail" className="mb-4">
+        <TabsList className="mb-2">
+          <TabsTrigger value="detail">产品收入明细</TabsTrigger>
+          <TabsTrigger value="region">产品分区域</TabsTrigger>
+          <TabsTrigger value="product-merchant">产品分商家</TabsTrigger>
+        </TabsList>
 
-        {/* 品类增速 */}
-        <Card className="border-none shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-4">各品类YoY增速</p>
-            <div className="space-y-3">
-              {categoryAgg.map((r) => {
-                const products = waimaiProductRevenue.filter((p) => p.category === r.name);
-                const avgYoy = products.reduce((s, p) => s + parseFloat(p.yoy), 0) / products.length;
-                const isNeg = avgYoy < 0;
-                return (
-                  <div key={r.name} className="flex items-center gap-3">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: r.color }} />
-                    <span className="text-xs text-gray-700 w-20 shrink-0 truncate">{r.name}</span>
-                    <Badge className={`border-none font-normal text-xs ${isNeg ? "bg-red-50 text-red-500" : "bg-emerald-50 text-emerald-600"}`}>
-                      YoY {isNeg ? "" : "+"}{avgYoy.toFixed(1)}%
-                    </Badge>
-                    <span className="text-xs text-gray-400">{products.length}个产品</span>
+        <TabsContent value="detail">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* 左侧2/3：产品收入明细表格 */}
+            <div className="lg:col-span-2">
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <p className="text-sm font-semibold text-gray-900">产品收入明细（{filtered.length}个产品）</p>
+                    <div className="flex items-center gap-2">
+                      <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(0); }}>
+                        <SelectTrigger className="w-32 h-8 text-sm">
+                          <SelectValue placeholder="品类筛选" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">全部品类</SelectItem>
+                          {categories.map((cat) => (
+                            <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="relative">
+                        <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
+                        <Input
+                          value={search}
+                          onChange={(e) => { setSearch(e.target.value); setPage(0); }}
+                          placeholder="搜索产品..."
+                          className="h-8 w-40 pl-8 text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
-                );
-              })}
+                  <ProductShareBar data={productShareGrouped} />
+                  <div className="flex flex-wrap gap-4 mt-2 mb-4">
+                    {productShareGrouped.map((r) => (
+                      <div key={r.name} className="flex items-center gap-1.5">
+                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: r.color }} />
+                        <span className="text-xs text-gray-600">{r.name} {r.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>产品名称</TableHead>
+                        <TableHead>品类</TableHead>
+                        <TableHead>收入</TableHead>
+                        <TableHead>收入YoY</TableHead>
+                        <TableHead>收入MoM</TableHead>
+                        <TableHead>目标</TableHead>
+                        <TableHead className="w-40">达成率</TableHead>
+                        <TableHead>占比</TableHead>
+                        <TableHead>广告商家数</TableHead>
+                        <TableHead>ARPU</TableHead>
+                        <TableHead>渗透率</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {paged.map((row) => (
+                        <TableRow key={row.name}>
+                          <TableCell className="font-medium text-gray-800">
+                            <span className="flex items-center gap-2">
+                              <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: waimaiColorFor(row) }} />
+                              {row.name}
+                            </span>
+                          </TableCell>
+                          <TableCell><Badge className="border-none font-normal bg-gray-50 text-gray-600 text-xs">{row.category}</Badge></TableCell>
+                          <TableCell className="font-medium">{row.revenue}</TableCell>
+                          <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                            {row.yoy.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                            {row.yoy}
+                          </TableCell>
+                          <TableCell className={row.mom.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                            {row.mom.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                            {row.mom}
+                          </TableCell>
+                          <TableCell>{row.target}</TableCell>
+                          <TableCell><RateProgress rate={row.rate} /></TableCell>
+                          <TableCell><Badge className="border-none font-normal bg-blue-50 text-[#4080FF]">{row.share}%</Badge></TableCell>
+                          <TableCell>{row.merchants.toLocaleString()}</TableCell>
+                          <TableCell className="text-gray-600">{row.arpu}</TableCell>
+                          <TableCell className="text-gray-600">{row.coverage}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                  {totalPages > 1 && (
+                    <div className="flex items-center justify-between mt-4">
+                      <span className="text-xs text-gray-400">第 {page + 1}/{totalPages} 页，共 {filtered.length} 个产品</span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setPage(Math.max(0, page - 1))}
+                          disabled={page === 0}
+                          className="p-1.5 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
+                          disabled={page >= totalPages - 1}
+                          className="p-1.5 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* 品类达成率 */}
-        <Card className="border-none shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-4">各品类达成率</p>
-            <div className="space-y-3">
-              {categoryTargetAgg.map((r) => (
-                <div key={r.product} className="flex items-center gap-3">
-                  <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: WAIMAI_CATEGORY_COLORS[r.product] }} />
-                  <span className="text-xs text-gray-700 w-20 shrink-0 truncate">{r.product}</span>
-                  <div className="flex-1"><RateProgress rate={r.rate} /></div>
-                  <Badge className={`border-none font-normal text-xs ${r.rate >= 100 ? "bg-emerald-50 text-emerald-600" : r.rate >= 85 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
-                    {r.status}
-                  </Badge>
-                </div>
-              ))}
+            {/* 右侧1/3：图表卡片 */}
+            <div className="space-y-4">
+              {/* 产品收入占比图 */}
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <p className="text-sm font-semibold text-gray-900 mb-2">各产品收入占比</p>
+                  <ProductShareChart data={productShareGrouped} />
+                  <div className="flex flex-wrap gap-x-3 gap-y-1 mt-2">
+                    {productShareGrouped.map((r) => (
+                      <div key={r.name} className="flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full" style={{ backgroundColor: r.color }} />
+                        <span className="text-[11px] text-gray-600">{r.name} {r.value}%</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 产品收入排名 Top 5 */}
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <p className="text-sm font-semibold text-gray-900 mb-4">各产品收入排名Top5</p>
+                  <div className="space-y-3">
+                    {revenueTop5.map((r, i) => (
+                      <div key={r.name} className="flex items-center gap-3">
+                        <span className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-amber-100 text-amber-600" : i === 1 ? "bg-gray-200 text-gray-600" : i === 2 ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-400"}`}>{i + 1}</span>
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: waimaiColorFor(r) }} />
+                        <span className="text-xs text-gray-700 flex-1 truncate">{r.name}</span>
+                        <span className="text-sm font-semibold" style={{ color: waimaiColorFor(r) }}>{r.revenue}</span>
+                        <Badge className="border-none font-normal text-xs" style={{ backgroundColor: waimaiColorFor(r) + "20", color: waimaiColorFor(r) }}>{r.share}%</Badge>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 产品 ARPU 值 */}
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <p className="text-sm font-semibold text-gray-900 mb-4">各产品ARPU值</p>
+                  <div className="space-y-3">
+                    {productArpuList.map((r, i) => (
+                      <div key={r.name} className="flex items-center gap-3">
+                        <span className="w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold text-white" style={{ backgroundColor: waimaiColorFor(r) }}>{i + 1}</span>
+                        <span className="text-xs text-gray-700 flex-1 truncate">{r.name}</span>
+                        <span className="text-sm font-semibold" style={{ color: waimaiColorFor(r) }}>{r.arpu}</span>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* 关键指标速览 */}
+              <Card className="border-none shadow-sm bg-white">
+                <CardContent className="p-5">
+                  <p className="text-sm font-semibold text-gray-900 mb-3">关键指标</p>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">达标产品</span>
+                      <span className="text-sm font-semibold text-gray-900">{waimaiProductRevenue.filter((r) => parseFloat(r.rate) >= 90).length}/{waimaiProductRevenue.length}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">平均达成率</span>
+                      <span className="text-sm font-semibold text-emerald-600">
+                        {Math.round(waimaiProductRevenue.reduce((s, r) => s + parseFloat(r.rate), 0) / waimaiProductRevenue.length)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">最高ARPU</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {Math.max(...waimaiProductRevenue.map((r) => parseInt(r.arpu)))}元
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs text-gray-500">总商户覆盖</span>
+                      <span className="text-sm font-semibold text-gray-900">
+                        {waimaiProductRevenue.reduce((s, r) => s + r.merchants, 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </TabsContent>
 
-      {/* 产品收入详情表 */}
-      <Card className="border-none shadow-sm bg-white mb-4">
+        <TabsContent value="region">
+      {/* 分区域/城市产品情况（按品类） */}
+      <Card className="border-none shadow-sm bg-white">
         <CardContent className="p-5">
           <div className="flex items-center justify-between mb-4">
-            <p className="text-sm font-semibold text-gray-900">产品收入明细（{filtered.length}个产品）</p>
-            <div className="flex items-center gap-2">
-              <Select value={categoryFilter} onValueChange={(v) => { setCategoryFilter(v); setPage(0); }}>
-                <SelectTrigger className="w-32 h-8 text-sm">
-                  <SelectValue placeholder="品类筛选" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">全部品类</SelectItem>
-                  {categories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>{cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-                <Input
-                  value={search}
-                  onChange={(e) => { setSearch(e.target.value); setPage(0); }}
-                  placeholder="搜索产品..."
-                  className="h-8 w-40 pl-8 text-sm"
-                />
-              </div>
-            </div>
+            <p className="text-sm font-semibold text-gray-900">产品分{regionViewMode === "region" ? "区域" : "城市"}</p>
+            <Select value={regionViewMode} onValueChange={(v) => setRegionViewMode(v)}>
+              <SelectTrigger className="w-[110px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="region">分区域</SelectItem>
+                <SelectItem value="city">分城市</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>产品名称</TableHead>
-                <TableHead>品类</TableHead>
-                <TableHead>收入</TableHead>
-                <TableHead>目标</TableHead>
-                <TableHead className="w-40">达成率</TableHead>
-                <TableHead>占比</TableHead>
-                <TableHead>活跃商户</TableHead>
-                <TableHead>ARPU</TableHead>
-                <TableHead>覆盖率</TableHead>
-                <TableHead>YoY</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paged.map((row) => (
-                <TableRow key={row.name}>
-                  <TableCell className="font-medium text-gray-800">
-                    <span className="flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: waimaiColorFor(row) }} />
-                      {row.name}
-                    </span>
-                  </TableCell>
-                  <TableCell><Badge className="border-none font-normal bg-gray-50 text-gray-600 text-xs">{row.category}</Badge></TableCell>
-                  <TableCell className="font-medium">{row.revenue}</TableCell>
-                  <TableCell>{row.target}</TableCell>
-                  <TableCell><RateProgress rate={row.rate} /></TableCell>
-                  <TableCell><Badge className="border-none font-normal bg-blue-50 text-[#4080FF]">{row.share}%</Badge></TableCell>
-                  <TableCell>{row.merchants.toLocaleString()}</TableCell>
-                  <TableCell className="text-gray-600">{row.arpu}</TableCell>
-                  <TableCell className="text-gray-600">{row.coverage}</TableCell>
-                  <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
-                    {row.yoy.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
-                    {row.yoy}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-4">
-              <span className="text-xs text-gray-400">第 {page + 1}/{totalPages} 页，共 {filtered.length} 个产品</span>
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setPage(Math.max(0, page - 1))}
-                  disabled={page === 0}
-                  className="p-1.5 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
-                >
-                  <ChevronLeft className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => setPage(Math.min(totalPages - 1, page + 1))}
-                  disabled={page >= totalPages - 1}
-                  className="p-1.5 rounded-md border border-gray-200 disabled:opacity-30 hover:bg-gray-50"
-                >
-                  <ChevronRight className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* 分区域产品情况（按品类） */}
-      <Card className="border-none shadow-sm bg-white mb-4">
-        <CardContent className="p-5">
-          <p className="text-sm font-semibold text-gray-900 mb-4">分区域品类收入情况</p>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>大区</TableHead>
-                <TableHead>竞价广告</TableHead>
+                <TableHead>{regionViewMode === "region" ? "区域" : "城市"}</TableHead>
                 <TableHead>效果广告</TableHead>
-                <TableHead>品牌广告</TableHead>
-                <TableHead>一站式</TableHead>
-                <TableHead>营销活动</TableHead>
-                <TableHead>工具服务</TableHead>
+                <TableHead>增值产品</TableHead>
+                <TableHead>省钱产品</TableHead>
+                <TableHead>品宣产品</TableHead>
                 <TableHead>合计</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {waimaiRegionRows.map((row) => (
-                <TableRow key={row.region}>
-                  <TableCell className="font-medium text-gray-800">{row.region}</TableCell>
-                  <TableCell className="text-[#4080FF]">{row["竞价广告"]}</TableCell>
-                  <TableCell className="text-[#00C896]">{row["效果广告"]}</TableCell>
-                  <TableCell className="text-[#FF8C42]">{row["品牌广告"]}</TableCell>
-                  <TableCell className="text-[#A855F7]">{row["一站式"]}</TableCell>
-                  <TableCell className="text-[#EC4899]">{row["营销活动"]}</TableCell>
-                  <TableCell className="text-[#6B7280]">{row["工具服务"]}</TableCell>
+              {(regionViewMode === "region" ? waimaiRegionRows : waimaiCityRows).map((row) => (
+                <TableRow key={row.region || row.city}>
+                  <TableCell className="font-medium text-gray-800">{row.region || row.city}</TableCell>
+                  <TableCell className="text-[#4080FF]">{row["效果广告"]}</TableCell>
+                  <TableCell className="text-[#00C896]">{row["增值产品"]}</TableCell>
+                  <TableCell className="text-[#FF8C42]">{row["省钱产品"]}</TableCell>
+                  <TableCell className="text-[#A855F7]">{row["品宣产品"]}</TableCell>
                   <TableCell className="font-semibold text-gray-900">{row.total}</TableCell>
                 </TableRow>
               ))}
@@ -625,57 +798,64 @@ const WaimaiProductView = () => {
           </Table>
         </CardContent>
       </Card>
+        </TabsContent>
 
-      {/* 产品目标 */}
-      <div className="mb-2">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <TargetIcon className="w-3.5 h-3.5 text-[#4080FF]" />
-            产品目标
-          </h2>
-        </div>
-        <Card className="border-none shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-4">各产品目标达成率（按达成率排序）</p>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>产品</TableHead>
-                  <TableHead>目标收入</TableHead>
-                  <TableHead>实际完成</TableHead>
-                  <TableHead className="w-40">达成率</TableHead>
-                  <TableHead>剩余缺口</TableHead>
-                  <TableHead>日均需完成</TableHead>
-                  <TableHead>YoY</TableHead>
-                  <TableHead>状态</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {[...waimaiTargetRows].sort((a, b) => b.rate - a.rate).map((row) => (
-                  <TableRow key={row.product}>
+        <TabsContent value="product-merchant">
+      <Card className="border-none shadow-sm bg-white">
+        <CardContent className="p-5">
+          <p className="text-sm font-semibold text-gray-900 mb-4">产品分商家（{waimaiProductTierRows.length}条 · 产品×商家分层）</p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>产品</TableHead>
+                <TableHead>商家分层</TableHead>
+                <TableHead>品类</TableHead>
+                <TableHead>收入</TableHead>
+                <TableHead>收入YoY</TableHead>
+                <TableHead>收入MoM</TableHead>
+                <TableHead>占商家分层</TableHead>
+                <TableHead>占总收入</TableHead>
+                <TableHead>广告实付GTV</TableHead>
+                <TableHead>ARPU</TableHead>
+                <TableHead>渗透率</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {waimaiProductTierRows.map((row, idx) => {
+                const pStyles = {
+                  P0: "bg-red-50 text-red-600",
+                  P1: "bg-orange-50 text-orange-600",
+                  P2: "bg-amber-50 text-amber-600",
+                  P3: "bg-blue-50 text-blue-600",
+                };
+                return (
+                  <TableRow key={idx}>
                     <TableCell className="font-medium text-gray-800">{row.product}</TableCell>
-                    <TableCell>{row.target}</TableCell>
-                    <TableCell className="font-medium">{row.achieved}</TableCell>
-                    <TableCell><RateProgress rate={row.rate} /></TableCell>
-                    <TableCell className="text-red-500">{row.gap}</TableCell>
-                    <TableCell>{row.dailyNeeded}</TableCell>
-                    <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.yoy}</TableCell>
                     <TableCell>
-                      <Badge className={`border-none font-normal ${
-                        row.status === "已达成" ? "bg-emerald-50 text-emerald-600" :
-                        row.status === "进行中" ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"
-                      }`}>
-                        {row.status}
-                      </Badge>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${pStyles[row.tier] || pStyles.P3}`}>{row.tier}</span>
                     </TableCell>
+                    <TableCell><Badge className="border-none font-normal bg-gray-50 text-gray-600 text-xs">{row.category}</Badge></TableCell>
+                    <TableCell className="font-medium">{row.revenue}</TableCell>
+                    <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                      {row.yoy.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                      {row.yoy}
+                    </TableCell>
+                    <TableCell className={row.mom.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.mom}</TableCell>
+                    <TableCell><Badge className="border-none font-normal bg-purple-50 text-purple-600">{row.tierShare}</Badge></TableCell>
+                    <TableCell><Badge className="border-none font-normal bg-blue-50 text-[#4080FF]">{row.totalShare}</Badge></TableCell>
+                    <TableCell className="text-gray-600">{row.gtv}</TableCell>
+                    <TableCell className="text-gray-600">{row.arpu}</TableCell>
+                    <TableCell className="text-gray-600">{row.penetration}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+        </TabsContent>
+      </Tabs>
+
     </div>
   );
 };
@@ -684,6 +864,7 @@ const WaimaiProductView = () => {
 /* 到餐产品视图（平台管理员）                                          */
 /* ================================================================== */
 const DaocanProductView = () => {
+  const [regionViewMode, setRegionViewMode] = useState("region");
   const chartData = daocanProductRevenue.map((r, i) => ({ name: r.name, value: r.share, color: daocanColorFor(i) }));
   const colorByProduct = {};
   daocanProductRevenue.forEach((r, i) => { colorByProduct[r.name] = daocanColorFor(i); });
@@ -787,10 +968,18 @@ const DaocanProductView = () => {
         </Card>
       </div>
 
-      {/* 产品收入详情表 */}
-      <Card className="border-none shadow-sm bg-white mb-4">
+      {/* 产品收入明细 + 分区域产品 — 双 Tab */}
+      <Tabs defaultValue="detail" className="mb-4">
+        <TabsList className="mb-2">
+          <TabsTrigger value="detail">产品收入明细</TabsTrigger>
+          <TabsTrigger value="region">产品分区域</TabsTrigger>
+          <TabsTrigger value="product-merchant">产品分商家</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="detail">
+      <Card className="border-none shadow-sm bg-white">
         <CardContent className="p-5">
-          <p className="text-sm font-semibold text-gray-900 mb-2">各消耗类型收入明细</p>
+          <p className="text-sm font-semibold text-gray-900 mb-2">产品收入明细</p>
           <ProductShareBar data={chartData} />
           <div className="flex flex-wrap gap-4 mt-2 mb-4">
             {daocanProductRevenue.map((r) => (
@@ -803,16 +992,16 @@ const DaocanProductView = () => {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>消耗类型</TableHead>
+                <TableHead>产品名称</TableHead>
                 <TableHead>收入</TableHead>
+                <TableHead>收入YoY</TableHead>
+                <TableHead>收入MoM</TableHead>
                 <TableHead>目标</TableHead>
                 <TableHead className="w-48">达成率</TableHead>
-                <TableHead>收入占比</TableHead>
-                <TableHead>活跃商户</TableHead>
+                <TableHead>占比</TableHead>
+                <TableHead>广告商家数</TableHead>
                 <TableHead>ARPU</TableHead>
-                <TableHead>覆盖率</TableHead>
-                <TableHead>YoY</TableHead>
-                <TableHead>MoM</TableHead>
+                <TableHead>渗透率</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -825,29 +1014,48 @@ const DaocanProductView = () => {
                     </span>
                   </TableCell>
                   <TableCell className="font-medium">{row.revenue}</TableCell>
+                  <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                    {row.yoy.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                    {row.yoy}
+                  </TableCell>
+                  <TableCell className={row.mom.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                    {row.mom.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                    {row.mom}
+                  </TableCell>
                   <TableCell>{row.target}</TableCell>
                   <TableCell><RateProgress rate={row.rate} /></TableCell>
                   <TableCell><Badge className="border-none font-normal bg-blue-50 text-[#4080FF]">{row.share}%</Badge></TableCell>
                   <TableCell>{row.merchants.toLocaleString()}</TableCell>
                   <TableCell className="text-gray-600">{row.arpu}</TableCell>
                   <TableCell className="text-gray-600">{row.coverage}</TableCell>
-                  <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.yoy}</TableCell>
-                  <TableCell className={row.mom.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.mom}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
+        </TabsContent>
 
-      {/* 分区域产品情况 */}
-      <Card className="border-none shadow-sm bg-white mb-4">
+        <TabsContent value="region">
+      {/* 分区域/城市产品情况 */}
+      <Card className="border-none shadow-sm bg-white">
         <CardContent className="p-5">
-          <p className="text-sm font-semibold text-gray-900 mb-4">分区域消耗类型收入情况</p>
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm font-semibold text-gray-900">产品分{regionViewMode === "region" ? "区域" : "城市"}</p>
+            <Select value={regionViewMode} onValueChange={(v) => setRegionViewMode(v)}>
+              <SelectTrigger className="w-[110px] h-8 text-xs">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="region">分区域</SelectItem>
+                <SelectItem value="city">分城市</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>大区</TableHead>
+                <TableHead>{regionViewMode === "region" ? "区域" : "城市"}</TableHead>
                 <TableHead>推广通(CPC)</TableHead>
                 <TableHead>订单通(CPS)</TableHead>
                 <TableHead>置顶卡(CPT)</TableHead>
@@ -857,9 +1065,9 @@ const DaocanProductView = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {daocanRegionRows.map((row) => (
-                <TableRow key={row.region}>
-                  <TableCell className="font-medium text-gray-800">{row.region}</TableCell>
+              {(regionViewMode === "region" ? daocanRegionRows : daocanCityRows).map((row) => (
+                <TableRow key={row.region || row.city}>
+                  <TableCell className="font-medium text-gray-800">{row.region || row.city}</TableCell>
                   <TableCell className="text-[#4080FF]">{row["推广通 (CPC)"]}</TableCell>
                   <TableCell className="text-[#00C896]">{row["订单通 (CPS)"]}</TableCell>
                   <TableCell className="text-[#FF8C42]">{row["置顶卡等 (CPT)"]}</TableCell>
@@ -872,74 +1080,63 @@ const DaocanProductView = () => {
           </Table>
         </CardContent>
       </Card>
+        </TabsContent>
 
-      {/* 产品目标 */}
-      <div className="mb-2">
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <TargetIcon className="w-3.5 h-3.5 text-[#4080FF]" />
-            产品目标
-          </h2>
-        </div>
-        <Card className="border-none shadow-sm bg-white">
-          <CardContent className="p-5">
-            <p className="text-sm font-semibold text-gray-900 mb-4">各消耗类型目标达成率</p>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>消耗类型</TableHead>
-                  <TableHead>目标收入</TableHead>
-                  <TableHead>实际完成</TableHead>
-                  <TableHead className="w-48">达成率</TableHead>
-                  <TableHead>剩余缺口</TableHead>
-                  <TableHead>日均需完成</TableHead>
-                  <TableHead>YoY</TableHead>
-                  <TableHead>状态</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {daocanTargetRows.map((row) => (
-                  <TableRow key={row.product}>
+        <TabsContent value="product-merchant">
+      <Card className="border-none shadow-sm bg-white">
+        <CardContent className="p-5">
+          <p className="text-sm font-semibold text-gray-900 mb-4">产品分商家（{daocanProductTierRows.length}条 · 消耗类型×商家分层）</p>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>产品</TableHead>
+                <TableHead>商家分层</TableHead>
+                <TableHead>品类</TableHead>
+                <TableHead>收入</TableHead>
+                <TableHead>收入YoY</TableHead>
+                <TableHead>收入MoM</TableHead>
+                <TableHead>占商家分层</TableHead>
+                <TableHead>占总收入</TableHead>
+                <TableHead>广告实付GTV</TableHead>
+                <TableHead>ARPU</TableHead>
+                <TableHead>渗透率</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {daocanProductTierRows.map((row, idx) => {
+                const pStyles = {
+                  P0: "bg-red-50 text-red-600",
+                  P1: "bg-orange-50 text-orange-600",
+                  P2: "bg-amber-50 text-amber-600",
+                  P3: "bg-blue-50 text-blue-600",
+                };
+                return (
+                  <TableRow key={idx}>
+                    <TableCell className="font-medium text-gray-800">{row.product}</TableCell>
                     <TableCell>
-                      <span className="font-medium text-gray-800 flex items-center gap-2">
-                        <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: colorByProduct[row.product] }} />
-                        {row.product}
-                      </span>
+                      <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-bold ${pStyles[row.tier] || pStyles.P3}`}>{row.tier}</span>
                     </TableCell>
-                    <TableCell>{row.target}</TableCell>
-                    <TableCell className="font-medium">{row.achieved}</TableCell>
-                    <TableCell><RateProgress rate={row.rate} /></TableCell>
-                    <TableCell className="text-red-500">{row.gap}</TableCell>
-                    <TableCell>{row.dailyNeeded}</TableCell>
-                    <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.yoy}</TableCell>
-                    <TableCell>
-                      <Badge className={`border-none font-normal ${
-                        row.status === "已达成" ? "bg-emerald-50 text-emerald-600" :
-                        row.status === "进行中" ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"
-                      }`}>
-                        {row.status}
-                      </Badge>
+                    <TableCell><Badge className="border-none font-normal bg-gray-50 text-gray-600 text-xs">{row.category}</Badge></TableCell>
+                    <TableCell className="font-medium">{row.revenue}</TableCell>
+                    <TableCell className={row.yoy.startsWith("-") ? "text-red-500" : "text-emerald-600"}>
+                      {row.yoy.startsWith("-") ? <TrendingDown className="w-3 h-3 inline mr-0.5" /> : <TrendingUp className="w-3 h-3 inline mr-0.5" />}
+                      {row.yoy}
                     </TableCell>
+                    <TableCell className={row.mom.startsWith("-") ? "text-red-500" : "text-emerald-600"}>{row.mom}</TableCell>
+                    <TableCell><Badge className="border-none font-normal bg-purple-50 text-purple-600">{row.tierShare}</Badge></TableCell>
+                    <TableCell><Badge className="border-none font-normal bg-blue-50 text-[#4080FF]">{row.totalShare}</Badge></TableCell>
+                    <TableCell className="text-gray-600">{row.gtv}</TableCell>
+                    <TableCell className="text-gray-600">{row.arpu}</TableCell>
+                    <TableCell className="text-gray-600">{row.penetration}</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-              <TableFooter>
-                <TableRow>
-                  <TableCell className="font-semibold text-gray-900">合计</TableCell>
-                  <TableCell className="font-semibold text-gray-900">{totalTarget.toLocaleString()}万</TableCell>
-                  <TableCell className="font-semibold text-gray-900">{totalRevenue.toLocaleString()}万</TableCell>
-                  <TableCell className="font-semibold text-[#4080FF]">{overallRate}%</TableCell>
-                  <TableCell className="font-semibold text-red-500">{(totalTarget - totalRevenue).toLocaleString()}万</TableCell>
-                  <TableCell />
-                  <TableCell />
-                  <TableCell />
-                </TableRow>
-              </TableFooter>
-            </Table>
-          </CardContent>
-        </Card>
-      </div>
+                );
+              })}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
@@ -1080,7 +1277,7 @@ const roleColorFor = (product, bizLine, index) => {
 /* ================================================================== */
 const BizManagerProductView = ({ currentUser, bizLine }) => {
   const data = bizManagerData[bizLine] || bizManagerData.waimai;
-  const region = currentUser?.region || "华东区";
+  const region = currentUser?.region || "江苏区域";
 
   const totalRevenue = data.cities.reduce((s, c) => s + parseAmount(c.revenue), 0);
   const totalTarget = data.cities.reduce((s, c) => s + parseAmount(c.target), 0);
@@ -1375,17 +1572,6 @@ const ProductSegmentation = () => {
   const aiAnalysisData = aiAnalysisDataMap[bizLine] || aiAnalysisDataMap.waimai;
   const aiItems = aiAnalysisData[role] || aiAnalysisData.platform_admin;
 
-  const bizLabel = bizLine === "waimai" ? "外卖" : "到餐";
-  const descMap = {
-    platform_admin: bizLine === "waimai"
-      ? "按28个广告产品维度分析收入结构、目标达成与增长机会"
-      : "按5个消耗类型（CPC/CPS/CPT/CPM/MEM）维度分析收入结构、目标达成与增长机会",
-    biz_manager: `${currentUser?.region || "华东区"}各城市${bizLabel}产品收入结构、目标达成与增长机会`,
-    partner: `${currentUser?.city || "上海"}各BD${bizLabel}产品收入结构、目标达成与增长机会`,
-    bd: `管辖门店${bizLabel}产品投放情况与目标达成`,
-  };
-  const desc = descMap[role] || descMap.platform_admin;
-
   const renderView = () => {
     switch (role) {
       case "biz_manager":
@@ -1399,23 +1585,181 @@ const ProductSegmentation = () => {
     }
   };
 
+  /* AI 智能分析：两个下拉 + 触发按钮 */
+  const [aiProduct, setAiProduct] = useState("all");
+  const [aiRegion, setAiRegion] = useState("全国");
+  const [aiTriggered, setAiTriggered] = useState(true);
+
+  /* 产品列表 */
+  const productList = bizLine === "waimai" ? waimaiProductRevenue : daocanProductRevenue;
+  const aiProductOptions = [
+    { value: "all", label: "全产品" },
+    ...productList.map((p) => ({ value: p.name, label: p.name })),
+  ];
+
+  /* 区域列表 */
+  const regionList = bizLine === "waimai" ? waimaiRegionRows : daocanRegionRows;
+  const aiRegionOptions = ["全国", ...regionList.map((r) => r.region)];
+
+  /* 根据选择生成分析内容 */
+  const aiAnalysisItems = (() => {
+    const items = [];
+    const productLabel = aiProductOptions.find((o) => o.value === aiProduct)?.label || "全产品";
+    const regionLabel = aiRegion;
+
+    /* 筛选产品 */
+    const matchedProducts = aiProduct === "all" ? productList : productList.filter((p) => p.name === aiProduct);
+
+    /* 筛选区域数据 */
+    const matchedRegions = aiRegion === "全国" ? regionList : regionList.filter((r) => r.region === aiRegion);
+
+    if (aiProduct === "all") {
+      /* 全产品分析 */
+      const totalRevenue = productList.reduce((s, p) => s + parseFloat(p.revenue.replace(/[,万]/g, "")), 0);
+      const totalTarget = productList.reduce((s, p) => s + parseFloat(p.target.replace(/[,万]/g, "")), 0);
+      const avgRate = Math.round((totalRevenue / totalTarget) * 100);
+
+      items.push({
+        title: `${regionLabel}全产品收入概览`,
+        text: `${regionLabel === "全国" ? "全国" : regionLabel}共${productList.length}个产品，合计收入约${totalRevenue.toFixed(0)}万，目标${totalTarget.toFixed(0)}万，整体达成率${avgRate}%。${avgRate >= 90 ? "整体达成良好。" : avgRate >= 80 ? "达成存在一定风险。" : "达成严重滞后，需紧急关注。"}`,
+      });
+
+      /* TOP 和 BOTTOM 产品 */
+      const sorted = [...productList].sort((a, b) => b.rate - a.rate);
+      const top = sorted[0];
+      const bottom = sorted[sorted.length - 1];
+      if (top) {
+        items.push({
+          title: `达成最优产品：${top.name}`,
+          text: `${top.name}达成率${top.rate}%，收入${top.revenue}，YoY ${top.yoy}。建议总结其运营经验并向其他产品线推广。`,
+        });
+      }
+      if (bottom && bottom !== top) {
+        items.push({
+          title: `达成待提升产品：${bottom.name}`,
+          text: `${bottom.name}达成率仅${bottom.rate}%，收入${bottom.revenue}（目标${bottom.target}），缺口较大。建议重点关注并制定提升方案。`,
+        });
+      }
+    } else {
+      /* 单产品分析 */
+      const product = matchedProducts[0];
+      if (product) {
+        items.push({
+          title: `${product.name}（${regionLabel}）产品分析`,
+          text: `${product.name}收入${product.revenue}（目标${product.target}），达成率${product.rate}%，YoY ${product.yoy}，MoM ${product.mom}，覆盖商户${product.merchants}家，ARPU ${product.arpu}，覆盖率${product.coverage}。${product.rate >= 90 ? "达成情况良好。" : product.rate >= 80 ? "达成有一定风险，需持续跟进。" : "达成严重滞后，建议紧急干预。"}`,
+        });
+
+        /* 区域分布分析 */
+        if (aiRegion === "全国") {
+          const regionData = regionList.map((r) => {
+            const val = r[product.name] || r[product.category] || "0万";
+            return { region: r.region, value: val };
+          });
+          const topRegion = regionData[0];
+          if (topRegion) {
+            items.push({
+              title: `${product.name}区域分布`,
+              text: `${product.name}在各区域中，${topRegion.region}收入最高（${topRegion.value}），${regionData[regionData.length - 1].region}最低（${regionData[regionData.length - 1].value}）。建议在低收入区域加大推广力度。`,
+            });
+          }
+        }
+      }
+    }
+
+    /* 区域维度分析 */
+    if (aiRegion !== "全国" && matchedRegions.length > 0) {
+      const regionRow = matchedRegions[0];
+      const regionTotal = regionRow.total;
+      if (aiProduct === "all") {
+        items.push({
+          title: `${aiRegion}区域产品结构`,
+          text: `${aiRegion}合计收入${regionTotal}。各品类收入分布：${Object.entries(regionRow).filter(([k]) => k !== "region" && k !== "total").map(([k, v]) => `${k} ${v}`).join("，")}。建议关注占比偏低的品类，挖掘增长空间。`,
+        });
+      }
+    }
+
+    return items.length > 0 ? items : aiItems;
+  })();
+
   return (
     <div className="space-y-5">
-      <PageHeader title="产品" description={desc} />
+      {/* AI 智能分析 — 两个下拉 + 按钮 */}
+      <div className="mb-1">
+        <div
+          className="rounded-xl overflow-hidden"
+          style={{
+            background: "linear-gradient(135deg, #faf5ff 0%, #f0e7ff 40%, #e8f0ff 100%)",
+            border: "1px solid #e9d5ff",
+          }}
+        >
+          {/* 标题行 */}
+          <div className="flex items-center gap-2 px-5 pt-4 pb-1">
+            <div
+              className="w-7 h-7 rounded-lg flex items-center justify-center"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              <Sparkles className="w-4 h-4 text-white" />
+            </div>
+            <h2 className="text-base font-bold text-gray-900">AI 智能分析</h2>
+            <span className="text-xs text-gray-400 font-normal ml-1">| 选择产品与区域，让 AI 解读产品数据</span>
+          </div>
+
+          {/* 两个下拉选择器 + 分析按钮 */}
+          <div className="flex items-center gap-3 px-5 py-3 flex-wrap">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">产品</span>
+              <Select value={aiProduct} onValueChange={(v) => { setAiProduct(v); setAiTriggered(false); }}>
+                <SelectTrigger className="w-[160px] h-8 text-xs bg-white/80">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {aiProductOptions.map((o) => (
+                    <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs text-gray-500 font-medium shrink-0">区域</span>
+              <Select value={aiRegion} onValueChange={(v) => { setAiRegion(v); setAiTriggered(false); }}>
+                <SelectTrigger className="w-[130px] h-8 text-xs bg-white/80">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {aiRegionOptions.map((r) => (
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <button
+              onClick={() => setAiTriggered(true)}
+              className="flex items-center gap-1 h-8 px-4 rounded-lg text-xs font-medium text-white transition-all hover:opacity-90"
+              style={{ background: "linear-gradient(135deg, #7c3aed, #6366f1)" }}
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              开始分析
+              <ChevronRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+
+          {/* 分割线 */}
+          <div className="mx-5 border-t border-purple-100/60" />
+
+          {/* 分析结果：统一默认第一条 + 苹果式展开 */}
+          {!aiTriggered ? (
+            <div className="flex items-center justify-center py-6 text-sm text-gray-400 nk-stagger">
+              请选择维度后点击「开始分析」
+            </div>
+          ) : (
+            <AiResultList items={aiAnalysisItems} />
+          )}
+        </div>
+      </div>
 
       {renderView()}
-
-      {/* AI 智能分析 */}
-      <div>
-        <div className="flex items-center gap-2 mb-3">
-          <div className="w-1 h-4 bg-[#4080FF] rounded-full" />
-          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#4080FF]" />
-            AI 智能分析 · {bizLabel}
-          </h2>
-        </div>
-        <AiDiagnosisCard items={aiItems} />
-      </div>
     </div>
   );
 };
