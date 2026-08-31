@@ -51,10 +51,10 @@ export default function OverviewRegion() {
 
   const BizCells = ({ data }) => (
     <>
-      <TableCell className="text-sm whitespace-nowrap text-gray-700">{data.revenue > 0 ? `${data.revenue}万` : "—"}</TableCell>
-      {!revenueOnly && <TableCell className="text-sm whitespace-nowrap text-gray-500">{data.target > 0 ? `${data.target}万` : "—"}</TableCell>}
+      <TableCell className="text-xs whitespace-nowrap text-gray-700">{data.revenue > 0 ? `${data.revenue}万` : "—"}</TableCell>
+      {!revenueOnly && <TableCell className="text-xs whitespace-nowrap text-gray-500">{data.target > 0 ? `${data.target}万` : "—"}</TableCell>}
       {!revenueOnly && (
-        <TableCell className="text-sm whitespace-nowrap">
+        <TableCell className="text-xs whitespace-nowrap">
           {data.rate > 0 ? (
             <Badge className={`border-none text-xs font-normal ${data.rate >= 90 ? "bg-emerald-50 text-emerald-600" : data.rate >= 80 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
               {data.rate}%
@@ -118,13 +118,13 @@ export default function OverviewRegion() {
                     <TableBody>
                       {REGION_DATA.map((row) => (
                         <TableRow key={row.region}>
-                          <TableCell className="text-sm font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.region}</TableCell>
+                          <TableCell className="text-xs font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.region}</TableCell>
                           {tab === "summary" && (
                             <>
-                              <TableCell className="text-sm font-semibold text-gray-900 whitespace-nowrap">{row.summary.revenue}万</TableCell>
-                              {!revenueOnly && <TableCell className="text-sm text-gray-500 whitespace-nowrap">{row.summary.target}万</TableCell>}
+                              <TableCell className="text-xs font-semibold text-gray-900 whitespace-nowrap">{row.summary.revenue}万</TableCell>
+                              {!revenueOnly && <TableCell className="text-xs text-gray-500 whitespace-nowrap">{row.summary.target}万</TableCell>}
                               {!revenueOnly && (
-                                <TableCell className="text-sm whitespace-nowrap">
+                                <TableCell className="text-xs whitespace-nowrap">
                                   <Badge className={`border-none text-xs font-normal ${row.summary.rate >= 90 ? "bg-emerald-50 text-emerald-600" : row.summary.rate >= 80 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
                                     {row.summary.rate}%
                                   </Badge>

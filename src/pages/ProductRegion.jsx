@@ -207,13 +207,13 @@ export default function ProductRegion() {
                 <TableBody>
                   {data.slice(0, 50).map((row, idx) => (
                     <TableRow key={idx} className="hover:bg-gray-50/50">
-                      <TableCell className="text-sm text-gray-900">{row.region}</TableCell>
-                      <TableCell className="text-sm text-gray-900">{row.product}</TableCell>
-                      <TableCell className="text-sm text-gray-900 text-right">{row.revenue}</TableCell>
+                      <TableCell className="text-xs text-gray-900">{row.region}</TableCell>
+                      <TableCell className="text-xs text-gray-900">{row.product}</TableCell>
+                      <TableCell className="text-xs text-gray-900 text-right">{row.revenue}</TableCell>
                       <TableCell className="text-right"><TrendCell value={row.revenueMom} /></TableCell>
-                      <TableCell className="text-right text-sm text-gray-900">{row.penetration}%</TableCell>
+                      <TableCell className="text-right text-xs text-gray-900">{row.penetration}%</TableCell>
                       <TableCell className="text-right"><TrendCell value={row.penetrationMom} /></TableCell>
-                      <TableCell className="text-right text-sm text-gray-900">{row.merchants}</TableCell>
+                      <TableCell className="text-right text-xs text-gray-900">{row.merchants}</TableCell>
                       <TableCell className="text-right"><TrendCell value={row.merchantsMom} /></TableCell>
                     </TableRow>
                   ))}

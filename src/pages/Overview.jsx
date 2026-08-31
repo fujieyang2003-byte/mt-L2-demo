@@ -134,33 +134,33 @@ export default function Overview() {
                   const isSummary = row.name === "汇总";
                   return (
                     <TableRow key={row.name} className={isSummary ? "bg-blue-50/30" : ""}>
-                      <TableCell className={`text-sm whitespace-nowrap sticky left-0 z-10 ${isSummary ? "font-bold text-gray-900 bg-blue-50/30" : "font-medium text-gray-800 bg-white"}`}>
+                      <TableCell className={`text-xs whitespace-nowrap sticky left-0 z-10 ${isSummary ? "font-bold text-gray-900 bg-blue-50/30" : "font-medium text-gray-800 bg-white"}`}>
                         {row.name}
                       </TableCell>
-                      <TableCell className={`text-sm whitespace-nowrap ${cellClass(isSummary)}`}>{formatWan(row.revenue)}</TableCell>
-                      <TableCell className={`text-sm whitespace-nowrap ${cellClass(isSummary)}`}>{formatWan(row.target)}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">
+                      <TableCell className={`text-xs whitespace-nowrap ${cellClass(isSummary)}`}>{formatWan(row.revenue)}</TableCell>
+                      <TableCell className={`text-xs whitespace-nowrap ${cellClass(isSummary)}`}>{formatWan(row.target)}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
                         <Badge className={`border-none text-xs font-normal ${row.rate >= 90 ? "bg-emerald-50 text-emerald-600" : row.rate >= 80 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
                           {row.rate}%
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.revenueYoy} /></TableCell>
-                      <TableCell className="text-sm whitespace-nowrap text-emerald-600">+{formatWan(row.revenueYoyAbs)}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.revenueMom} /></TableCell>
-                      <TableCell className="text-sm whitespace-nowrap text-emerald-600">+{formatWan(row.revenueMomAbs)}</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.revenueWow} /></TableCell>
-                      <TableCell className="text-sm whitespace-nowrap text-emerald-600">+{formatWan(row.revenueWowAbs)}</TableCell>
-                      <TableCell className={`text-sm whitespace-nowrap ${cellClass(isSummary)}`}>{row.mr}%</TableCell>
-                      <TableCell className="text-sm whitespace-nowrap">
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.revenueYoy} /></TableCell>
+                      <TableCell className="text-xs whitespace-nowrap text-emerald-600">+{formatWan(row.revenueYoyAbs)}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.revenueMom} /></TableCell>
+                      <TableCell className="text-xs whitespace-nowrap text-emerald-600">+{formatWan(row.revenueMomAbs)}</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.revenueWow} /></TableCell>
+                      <TableCell className="text-xs whitespace-nowrap text-emerald-600">+{formatWan(row.revenueWowAbs)}</TableCell>
+                      <TableCell className={`text-xs whitespace-nowrap ${cellClass(isSummary)}`}>{row.mr}%</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap">
                         <Badge className={`border-none text-xs font-normal ${row.mrRate >= 90 ? "bg-emerald-50 text-emerald-600" : "bg-blue-50 text-[#4080FF]"}`}>
                           {row.mrRate}%
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.mrYoy} /></TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.mrMom} /></TableCell>
-                      <TableCell className="text-sm whitespace-nowrap"><TrendValue value={row.mrWow} /></TableCell>
-                      <TableCell className={`text-sm whitespace-nowrap ${cellClass(isSummary)}`}>{row.penetration}%</TableCell>
-                      <TableCell className={`text-sm whitespace-nowrap ${cellClass(isSummary)}`}>{row.arpu}元</TableCell>
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.mrYoy} /></TableCell>
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.mrMom} /></TableCell>
+                      <TableCell className="text-xs whitespace-nowrap"><TrendValue value={row.mrWow} /></TableCell>
+                      <TableCell className={`text-xs whitespace-nowrap ${cellClass(isSummary)}`}>{row.penetration}%</TableCell>
+                      <TableCell className={`text-xs whitespace-nowrap ${cellClass(isSummary)}`}>{row.arpu}元</TableCell>
                     </TableRow>
                   );
                 })}

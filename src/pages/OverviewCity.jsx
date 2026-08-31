@@ -105,19 +105,19 @@ export default function OverviewCity() {
                   <TableBody>
                     {CITY_DATA.summary.map((row) => (
                       <TableRow key={row.category}>
-                        <TableCell className="text-sm font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.category}</TableCell>
-                        <TableCell className="text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">{row.cities}</TableCell>
-                        <TableCell className="text-sm font-semibold text-gray-900 whitespace-nowrap">{row.revenue}万</TableCell>
-                        <TableCell className="text-sm text-gray-500 whitespace-nowrap">{row.target}万</TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">
+                        <TableCell className="text-xs font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.category}</TableCell>
+                        <TableCell className="text-xs text-gray-500 whitespace-nowrap max-w-[200px] truncate">{row.cities}</TableCell>
+                        <TableCell className="text-xs font-semibold text-gray-900 whitespace-nowrap">{row.revenue}万</TableCell>
+                        <TableCell className="text-xs text-gray-500 whitespace-nowrap">{row.target}万</TableCell>
+                        <TableCell className="text-xs whitespace-nowrap">
                           <Badge className={`border-none text-xs font-normal ${row.rate >= 90 ? "bg-emerald-50 text-emerald-600" : row.rate >= 80 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
                             {row.rate}%
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.waimai}万</TableCell>
-                        <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.daocan}万</TableCell>
-                        <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.shangou}万</TableCell>
-                        <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.yiyao}万</TableCell>
+                        <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.waimai}万</TableCell>
+                        <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.daocan}万</TableCell>
+                        <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.shangou}万</TableCell>
+                        <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.yiyao}万</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -144,17 +144,17 @@ export default function OverviewCity() {
                     <TableBody>
                       {CITY_DATA[biz].map((row) => (
                         <TableRow key={row.category}>
-                          <TableCell className="text-sm font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.category}</TableCell>
-                          <TableCell className="text-sm text-gray-500 whitespace-nowrap max-w-[200px] truncate">{row.cities}</TableCell>
-                          <TableCell className="text-sm font-semibold text-gray-900 whitespace-nowrap">{row.revenue}万</TableCell>
-                          <TableCell className="text-sm text-gray-500 whitespace-nowrap">{row.target}万</TableCell>
-                          <TableCell className="text-sm whitespace-nowrap">
+                          <TableCell className="text-xs font-medium text-gray-800 whitespace-nowrap sticky left-0 bg-white z-10">{row.category}</TableCell>
+                          <TableCell className="text-xs text-gray-500 whitespace-nowrap max-w-[200px] truncate">{row.cities}</TableCell>
+                          <TableCell className="text-xs font-semibold text-gray-900 whitespace-nowrap">{row.revenue}万</TableCell>
+                          <TableCell className="text-xs text-gray-500 whitespace-nowrap">{row.target}万</TableCell>
+                          <TableCell className="text-xs whitespace-nowrap">
                             <Badge className={`border-none text-xs font-normal ${row.rate >= 90 ? "bg-emerald-50 text-emerald-600" : row.rate >= 80 ? "bg-blue-50 text-[#4080FF]" : "bg-red-50 text-red-500"}`}>
                               {row.rate}%
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.merchants}</TableCell>
-                          <TableCell className="text-sm text-gray-600 whitespace-nowrap">{row.penetration}%</TableCell>
+                          <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.merchants}</TableCell>
+                          <TableCell className="text-xs text-gray-600 whitespace-nowrap">{row.penetration}%</TableCell>
                         </TableRow>
                       ))}
                     </TableBody>

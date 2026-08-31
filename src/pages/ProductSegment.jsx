@@ -93,20 +93,20 @@ const SegmentTable = ({ title, badgeColor, rows }) => (
         <TableBody>
           {rows.map((row, idx) => (
             <TableRow key={idx} className="hover:bg-gray-50/50">
-              <TableCell className="text-sm font-medium text-gray-900">{row.product}</TableCell>
+              <TableCell className="text-xs font-medium text-gray-900">{row.product}</TableCell>
               <TableCell className="text-xs text-gray-500">{row.category}</TableCell>
-              <TableCell className="text-sm text-gray-900 text-right">{row.revenue.toLocaleString()}</TableCell>
+              <TableCell className="text-xs text-gray-900 text-right">{row.revenue.toLocaleString()}</TableCell>
               <TableCell className="text-right"><TrendCell value={row.yoy} /></TableCell>
               <TableCell className="text-right"><TrendCell value={row.mom} /></TableCell>
               <TableCell className="text-right text-xs text-gray-900">{row.tierRatio}%</TableCell>
               <TableCell className="text-right text-xs text-gray-900">{row.totalRatio}%</TableCell>
-              <TableCell className="text-right text-sm text-gray-900">{row.penetration}%</TableCell>
+              <TableCell className="text-right text-xs text-gray-900">{row.penetration}%</TableCell>
               <TableCell className="text-right"><TrendCell value={row.pyoy} /></TableCell>
               <TableCell className="text-right"><TrendCell value={row.pmom} /></TableCell>
-              <TableCell className="text-right text-sm text-gray-900">{row.arpu}</TableCell>
+              <TableCell className="text-right text-xs text-gray-900">{row.arpu}</TableCell>
               <TableCell className="text-right"><TrendCell value={row.ayoy} /></TableCell>
               <TableCell className="text-right"><TrendCell value={row.amom} /></TableCell>
-              <TableCell className="text-right text-sm text-gray-900">{row.merchants.toLocaleString()}</TableCell>
+              <TableCell className="text-right text-xs text-gray-900">{row.merchants.toLocaleString()}</TableCell>
               <TableCell className="text-right"><TrendCell value={row.myoy} /></TableCell>
               <TableCell className="text-right"><TrendCell value={row.mmom} /></TableCell>
             </TableRow>

@@ -107,22 +107,22 @@ export default function ProductOverview() {
                       "bg-gray-100 text-gray-400"
                     }`}>{row.rank}</span>
                   </TableCell>
-                  <TableCell className="text-sm font-medium text-gray-900">{row.product}</TableCell>
+                  <TableCell className="text-xs font-medium text-gray-900">{row.product}</TableCell>
                   <TableCell className="text-xs text-gray-500">{row.category}</TableCell>
-                  <TableCell className="text-sm text-gray-900 text-right font-medium">{row.revenue.toLocaleString()}</TableCell>
+                  <TableCell className="text-xs text-gray-900 text-right font-medium">{row.revenue.toLocaleString()}</TableCell>
                   <TableCell className="text-right"><TrendCell value={row.yoy} /></TableCell>
                   <TableCell className="text-right"><TrendCell value={row.mom} /></TableCell>
-                  <TableCell className="text-sm text-gray-900 text-right">{row.target.toLocaleString()}</TableCell>
+                  <TableCell className="text-xs text-gray-900 text-right">{row.target.toLocaleString()}</TableCell>
                   <TableCell className="text-right">
                     <span className={`text-xs font-semibold ${row.rate >= 90 ? "text-emerald-600" : row.rate >= 70 ? "text-orange-500" : "text-red-500"}`}>{row.rate}%</span>
                   </TableCell>
-                  <TableCell className="text-right text-sm text-gray-900">{row.penetration}%</TableCell>
+                  <TableCell className="text-right text-xs text-gray-900">{row.penetration}%</TableCell>
                   <TableCell className="text-right"><TrendCell value={row.pyoy} /></TableCell>
                   <TableCell className="text-right"><TrendCell value={row.pmom} /></TableCell>
-                  <TableCell className="text-right text-sm text-gray-900">{row.arpu}</TableCell>
+                  <TableCell className="text-right text-xs text-gray-900">{row.arpu}</TableCell>
                   <TableCell className="text-right"><TrendCell value={row.ayoy} /></TableCell>
                   <TableCell className="text-right"><TrendCell value={row.amom} /></TableCell>
-                  <TableCell className="text-right text-sm text-gray-900">{row.merchants.toLocaleString()}</TableCell>
+                  <TableCell className="text-right text-xs text-gray-900">{row.merchants.toLocaleString()}</TableCell>
                   <TableCell className="text-right"><TrendCell value={row.myoy} /></TableCell>
                   <TableCell className="text-right"><TrendCell value={row.mmom} /></TableCell>
                 </TableRow>
