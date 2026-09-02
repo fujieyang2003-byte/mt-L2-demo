@@ -10,6 +10,7 @@ import PermissionManagement from "./pages/PermissionManagement.jsx";
 import PlaceholderPage from "./pages/PlaceholderPage.jsx";
 import MerchantDetail from "./pages/MerchantDetail.jsx";
 import MerchantSegment from "./pages/MerchantSegment.jsx";
+import MerchantChange from "./pages/MerchantChange.jsx";
 import ChannelAnnual from "./pages/ChannelAnnual.jsx";
 import BizLineRouteWrapper from "./components/BizLineRouteWrapper.jsx";
 import {
@@ -41,7 +42,7 @@ export const navItems = [
   { to: "/waimai/product/detail", page: <W><ProductDetail /></W> },
   { to: "/waimai/merchant/overview", page: <W><MerchantTierAnalysis /></W> },
   { to: "/waimai/merchant/segment", page: <W><MerchantSegment /></W> },
-  { to: "/waimai/merchant/change", page: <W><PlaceholderPage title="外卖 — 商家变化" /></W> },
+  { to: "/waimai/merchant/change", page: <W><MerchantChange /></W> },
   { to: "/waimai/merchant/category", page: <W><PlaceholderPage title="外卖 — 品类" /></W> },
   { to: "/waimai/channel/region", page: <W><ChannelRegionView /></W> },
   { to: "/waimai/channel/partner", page: <W><ChannelPartnerView /></W> },
@@ -58,7 +59,7 @@ export const navItems = [
   { to: "/daocan/product/detail", page: <W><ProductDetail /></W> },
   { to: "/daocan/merchant/overview", page: <W><MerchantTierAnalysis /></W> },
   { to: "/daocan/merchant/segment", page: <W><MerchantDetail /></W> },
-  { to: "/daocan/merchant/change", page: <W><PlaceholderPage title="到餐 — 商家变化" /></W> },
+  { to: "/daocan/merchant/change", page: <W><MerchantChange /></W> },
   { to: "/daocan/channel/region", page: <W><ChannelRegionView /></W> },
   { to: "/daocan/channel/partner", page: <W><ChannelPartnerView /></W> },
   { to: "/daocan/channel/city", page: <W><ChannelCityView /></W> },

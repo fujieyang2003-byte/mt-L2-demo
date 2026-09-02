@@ -241,7 +241,14 @@ const buildRow = (r) => {
     mrYoy: r.mrYoy || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 3).toFixed(1)}pp`,
     mrMom: r.mrMom || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 2).toFixed(1)}pp`,
     penetration: r.penetration || `${60 + Math.floor(Math.random() * 30)}%`,
+    penetrationYoy: r.penetrationYoy || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 5).toFixed(1)}%`,
+    penetrationMom: r.penetrationMom || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 3).toFixed(1)}%`,
     arpu: r.arpu || `${(0.5 + Math.random() * 4.5).toFixed(2)}万`,
+    arpuYoy: r.arpuYoy || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 6).toFixed(1)}%`,
+    arpuMom: r.arpuMom || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 3).toFixed(1)}%`,
+    merchantCount: r.merchantCount || `${(1000 + Math.floor(Math.random() * 9000)).toLocaleString()}`,
+    merchantYoY: r.merchantYoY || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 8).toFixed(1)}%`,
+    merchantMom: r.merchantMom || `${Math.random() > 0.3 ? "+" : "-"}${(Math.random() * 4).toFixed(1)}%`,
     gtv: `${gtvNum}万`,
     profitAmount: r.profitAmount || `${profitNum}万`,
     profitImprovement,
@@ -1874,132 +1881,112 @@ const BdView = () => {
 /* ================================================================== */
 /* 独立导出的四个明细视图（供明细页使用）                                */
 /* ================================================================== */
+/* ================================================================== */
+/* 区域明细表格 —— 按设计图2                                            */
+/* ================================================================== */
+const RegionDetailTable = ({ rows, onRegionClick }) => (
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="min-w-[100px]">区域</TableHead>
+          <TableHead>城市数</TableHead>
+          <TableHead>目标收入</TableHead>
+          <TableHead>收入</TableHead>
+          <TableHead>收入YoY</TableHead>
+          <TableHead>收入MoM</TableHead>
+          <TableHead className="w-28">达成率</TableHead>
+          <TableHead>渗透率</TableHead>
+          <TableHead>渗透率YoY</TableHead>
+          <TableHead>渗透率MoM</TableHead>
+          <TableHead>ARPU</TableHead>
+          <TableHead>ARPU YoY</TableHead>
+          <TableHead>ARPU MoM</TableHead>
+          <TableHead>商家数</TableHead>
+          <TableHead>商家数YoY</TableHead>
+          <TableHead>商家数MoM</TableHead>
+          <TableHead>GTV</TableHead>
+          <TableHead className="w-24">操作</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.name} className="hover:bg-blue-50/30">
+            <TableCell className="font-semibold text-gray-900">
+              {row.name}
+              <span className="block text-xs font-normal text-gray-400 mt-0.5">{row.partners}家合作商</span>
+            </TableCell>
+            <TableCell>{row.cities}</TableCell>
+            <TableCell>{row.target}</TableCell>
+            <TableCell className="font-medium text-gray-700">{row.achieved}</TableCell>
+            <TrendCell value={row.yoy} />
+            <TrendCell value={row.mom} />
+            <TableCell><RateProgress rate={row.rate} /></TableCell>
+            <TableCell className="text-gray-600">{row.penetration}</TableCell>
+            <TrendCell value={row.penetrationYoy} />
+            <TrendCell value={row.penetrationMom} />
+            <TableCell className="text-gray-600">{row.arpu}</TableCell>
+            <TrendCell value={row.arpuYoy} />
+            <TrendCell value={row.arpuMom} />
+            <TableCell className="text-gray-600">{row.merchantCount}</TableCell>
+            <TrendCell value={row.merchantYoY} />
+            <TrendCell value={row.merchantMom} />
+            <TableCell className="text-gray-600">{row.gtv}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onRegionClick && onRegionClick(row.name)} className="p-1 rounded hover:bg-blue-100" title="下钻到城市">
+                  <ExternalLink className="w-4 h-4 text-[#4080FF]" />
+                </button>
+                <button className="p-1 rounded hover:bg-blue-100" title="下发城市诊断到大象">
+                  <MessageSquare className="w-4 h-4 text-[#4080FF]" />
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell className="font-semibold text-gray-900">全国合计</TableCell>
+          <TableCell className="font-semibold text-gray-900">{rows.reduce((s, r) => s + (r.cities || 0), 0)}</TableCell>
+          <TableCell className="font-semibold text-gray-900">{(rows.reduce((s, r) => s + parseAmount(r.target), 0) / 10000).toFixed(0) + "万"}</TableCell>
+          <TableCell className="font-semibold text-gray-900">{(rows.reduce((s, r) => s + parseAmount(r.achieved), 0) / 10000).toFixed(0) + "万"}</TableCell>
+          <TableCell /><TableCell />
+          <TableCell className="font-semibold text-[#4080FF]">{rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.rate, 0) / rows.length) : 0}%</TableCell>
+          <TableCell /><TableCell /><TableCell />
+          <TableCell /><TableCell /><TableCell />
+          <TableCell className="font-semibold text-gray-900">{rows.reduce((s, r) => s + parseInt((r.merchantCount || "0").replace(/,/g, "")), 0).toLocaleString()}</TableCell>
+          <TableCell /><TableCell />
+          <TableCell /><TableCell />
+        </TableRow>
+      </TableFooter>
+    </Table>
+  </div>
+);
+
 export const ChannelRegionView = () => {
   const { bizLine } = useBizLine();
   const navigate = useNavigate();
 
-  const summary = channelSummary[bizLine];
   const regionRows = useMemo(() => sortByRate(channelRegionRows[bizLine]), [bizLine]);
-
-  const avgMrRate = useMemo(() => {
-    const rates = regionRows.map((r) => parseInt(r.mrRate));
-    return Math.round(rates.reduce((s, r) => s + r, 0) / rates.length);
-  }, [regionRows]);
 
   const handleRegionClick = (regionName) => {
     navigate(`/channel/region/${encodeURIComponent(regionName)}`);
   };
 
-  const regionTop5 = regionRows.slice(0, 5);
-  const regionBottom5 = regionRows.slice(-5).reverse();
-
   return (
-    <>
+    <div className="space-y-5">
       <AiAnalysisBlock rows={regionRows} scopeLabel="区域" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-base font-semibold text-gray-900">全国区域达成明细</p>
-                <span className="text-xs text-gray-400">点击穿透 → 查看城市明细 · 消息图标 → 下发诊断</span>
-              </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <ExpandedTableHeader showIncentive={false} showOpAction />
-                  <TableBody>
-                    {regionRows.map((row) => (
-                      <ExpandedTableRow
-                        key={row.name}
-                        row={row}
-                        onOpAction={() => handleRegionClick(row.name)}
-                        onDiagnosis
-                        showIncentive={false}
-                        showOpAction
-                        nameCellExtra={`${row.partners}家合作商 · ${row.cities}个城市`}
-                      />
-                    ))}
-                  </TableBody>
-                  <TableFooter>
-                    <TableRow>
-                      <TableCell className="font-semibold text-gray-900">全国合计</TableCell>
-                      <TableCell className="font-semibold text-gray-900">{summary.totalTarget}</TableCell>
-                      <TableCell className="font-semibold text-gray-900">{summary.totalAchieved}</TableCell>
-                      <TableCell className="font-semibold text-[#4080FF]">{summary.rate}%</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell className="font-semibold text-gray-900">{avgMrRate}%</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell><StatusBadge rate={summary.rate} /></TableCell>
-                      <TableCell />
-                    </TableRow>
-                  </TableFooter>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="space-y-5">
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-semibold text-gray-900">收入达成率 TOP 5</span>
-              </div>
-              <div className="space-y-1.5">
-                {regionTop5.map((row, i) => (
-                  <div key={row.name} className="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-gray-50">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${i < 3 ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400"}`}>{i + 1}</span>
-                    <span className="text-xs text-gray-700 flex-1 truncate">{row.name}</span>
-                    <span className="text-xs font-medium text-emerald-600">{row.rate}%</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingDown className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-semibold text-gray-900">收入达成率 Bottom 5</span>
-              </div>
-              <div className="space-y-1.5">
-                {regionBottom5.map((row, i) => (
-                  <div key={row.name} className="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-gray-50">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${i < 3 ? "bg-red-100 text-red-500" : "bg-gray-100 text-gray-400"}`}>{i + 1}</span>
-                    <span className="text-xs text-gray-700 flex-1 truncate">{row.name}</span>
-                    <span className="text-xs font-medium text-red-500">{row.rate}%</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm bg-white">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <span className="text-sm font-semibold text-gray-900">关键指标</span>
-            </div>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">达标区域</span>
-                <span className="text-sm font-semibold text-gray-900">{regionRows.filter((r) => r.rate >= 90).length}/{regionRows.length}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">平均达成率</span>
-                <span className="text-sm font-semibold text-emerald-600">{regionRows.length > 0 ? Math.round(regionRows.reduce((s, r) => s + r.rate, 0) / regionRows.length) : 0}%</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">总合作商</span>
-                <span className="text-sm font-semibold text-gray-900">{regionRows.reduce((s, r) => s + (r.partners || 0), 0)}</span>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    </>
+      <Card className="border-none shadow-sm bg-white">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-base font-semibold text-gray-900">全国区域达成明细</p>
+            <span className="text-xs text-gray-400">可用范围：平台管理员、广告业务经理（仅自己区域）</span>
+          </div>
+          <RegionDetailTable rows={regionRows} onRegionClick={handleRegionClick} />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
@@ -2134,11 +2121,103 @@ export const ChannelPartnerView = () => {
   );
 };
 
+/* ================================================================== */
+/* 城市明细表格 —— 按设计图1                                            */
+/* ================================================================== */
+const CityDetailTable = ({ rows, onCityClick }) => (
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="min-w-[80px]">区域</TableHead>
+          <TableHead className="min-w-[80px]">城市</TableHead>
+          <TableHead>目标收入</TableHead>
+          <TableHead>收入</TableHead>
+          <TableHead>收入YoY</TableHead>
+          <TableHead>收入MoM</TableHead>
+          <TableHead className="w-28">达成率</TableHead>
+          <TableHead>渗透率</TableHead>
+          <TableHead>渗透率YoY</TableHead>
+          <TableHead>渗透率MoM</TableHead>
+          <TableHead>ARPU</TableHead>
+          <TableHead>ARPU YoY</TableHead>
+          <TableHead>ARPU MoM</TableHead>
+          <TableHead>商家数</TableHead>
+          <TableHead>商家数YoY</TableHead>
+          <TableHead>商家数MoM</TableHead>
+          <TableHead>GTV</TableHead>
+          <TableHead className="w-24">操作</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {rows.map((row) => (
+          <TableRow key={row.name} className="hover:bg-blue-50/30">
+            <TableCell className="text-gray-600">{row.region}</TableCell>
+            <TableCell className="font-semibold text-gray-900">
+              {row.name}
+              <span className="block text-xs font-normal text-gray-400 mt-0.5">{row.partners}家合作商 · {row.bds}BD</span>
+            </TableCell>
+            <TableCell>{row.target}</TableCell>
+            <TableCell className="font-medium text-gray-700">{row.achieved}</TableCell>
+            <TrendCell value={row.yoy} />
+            <TrendCell value={row.mom} />
+            <TableCell><RateProgress rate={row.rate} /></TableCell>
+            <TableCell className="text-gray-600">{row.penetration}</TableCell>
+            <TrendCell value={row.penetrationYoy} />
+            <TrendCell value={row.penetrationMom} />
+            <TableCell className="text-gray-600">{row.arpu}</TableCell>
+            <TrendCell value={row.arpuYoy} />
+            <TrendCell value={row.arpuMom} />
+            <TableCell className="text-gray-600">{row.merchantCount}</TableCell>
+            <TrendCell value={row.merchantYoY} />
+            <TrendCell value={row.merchantMom} />
+            <TableCell className="text-gray-600">{row.gtv}</TableCell>
+            <TableCell>
+              <div className="flex items-center gap-1">
+                <button onClick={() => onCityClick && onCityClick(row.name)} className="p-1 rounded hover:bg-blue-100" title="下钻到BD">
+                  <ExternalLink className="w-4 h-4 text-[#4080FF]" />
+                </button>
+                <button className="p-1 rounded hover:bg-blue-100" title="下发城市诊断到大象">
+                  <MessageSquare className="w-4 h-4 text-[#4080FF]" />
+                </button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell /><TableCell className="font-semibold text-gray-900">全国合计</TableCell>
+          <TableCell className="font-semibold text-gray-900">{(rows.reduce((s, r) => s + parseAmount(r.target), 0) / 10000).toFixed(0) + "万"}</TableCell>
+          <TableCell className="font-semibold text-gray-900">{(rows.reduce((s, r) => s + parseAmount(r.achieved), 0) / 10000).toFixed(0) + "万"}</TableCell>
+          <TableCell /><TableCell />
+          <TableCell className="font-semibold text-[#4080FF]">{rows.length > 0 ? Math.round(rows.reduce((s, r) => s + r.rate, 0) / rows.length) : 0}%</TableCell>
+          <TableCell /><TableCell /><TableCell />
+          <TableCell /><TableCell /><TableCell />
+          <TableCell className="font-semibold text-gray-900">{rows.reduce((s, r) => s + parseInt((r.merchantCount || "0").replace(/,/g, "")), 0).toLocaleString()}</TableCell>
+          <TableCell /><TableCell />
+          <TableCell /><TableCell />
+        </TableRow>
+      </TableFooter>
+    </Table>
+  </div>
+);
+
 export const ChannelCityView = () => {
   const { bizLine } = useBizLine();
   const navigate = useNavigate();
 
   const cityRows = useMemo(() => sortByRate(channelCityRows[bizLine]), [bizLine]);
+
+  const totalAchieved = useMemo(() => cityRows.reduce((s, r) => s + parseAmount(r.achieved), 0), [cityRows]);
+  const avgMr = useMemo(() => {
+    const vals = cityRows.map((r) => parseFloat(r.mr)).filter((n) => !isNaN(n));
+    return vals.length > 0 ? (vals.reduce((s, n) => s + n, 0) / vals.length).toFixed(2) : "0.00";
+  }, [cityRows]);
+  const momTrend = useMemo(() => {
+    const up = cityRows.filter((r) => !r.mom.startsWith("-")).length;
+    return `${up}/${cityRows.length}`;
+  }, [cityRows]);
 
   const handleCityClick = (cityName) => {
     const city = cityRows.find((r) => r.name === cityName);
@@ -2147,116 +2226,64 @@ export const ChannelCityView = () => {
     }
   };
 
-  const cityTop5 = cityRows.slice(0, 5);
-  const cityBottom5 = cityRows.slice(-5).reverse();
-
   return (
-    <>
+    <div className="space-y-5">
       <AiAnalysisBlock rows={cityRows} scopeLabel="城市" />
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="p-5">
-              <div className="flex items-center justify-between mb-4">
-                <p className="text-base font-semibold text-gray-900">全国城市达成明细</p>
-                <span className="text-xs text-gray-400">点击穿透 → 查看BD/运营明细 · 消息图标 → 下发诊断</span>
+
+      {/* 3个KPI卡片 */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="border-none shadow-sm bg-white">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-blue-50">
+                <DollarSign className="w-5 h-5 text-blue-600" />
               </div>
-              <div className="overflow-x-auto">
-                <Table>
-                  <ExpandedTableHeader showIncentive={false} showOpAction />
-                  <TableBody>
-                    {cityRows.map((row) => (
-                      <ExpandedTableRow
-                        key={row.name}
-                        row={row}
-                        onOpAction={() => handleCityClick(row.name)}
-                        onDiagnosis
-                        showIncentive={false}
-                        showOpAction
-                        nameCellExtra={`${row.region} · ${row.partners}家合作商 · ${row.bds}BD`}
-                      />
-                    ))}
-                  </TableBody>
-                  <TableFooter>
-                    <TableRow>
-                      <TableCell className="font-semibold text-gray-900">全国合计</TableCell>
-                      <TableCell className="font-semibold text-gray-900">{(cityRows.reduce((s, r) => s + parseAmount(r.target), 0) / 10000).toFixed(0) + "万"}</TableCell>
-                      <TableCell className="font-semibold text-gray-900">{(cityRows.reduce((s, r) => s + parseAmount(r.achieved), 0) / 10000).toFixed(0) + "万"}</TableCell>
-                      <TableCell className="font-semibold text-[#4080FF]">{cityRows.length > 0 ? Math.round(cityRows.reduce((s, r) => s + r.rate, 0) / cityRows.length) : 0}%</TableCell>
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell />
-                      <TableCell><StatusBadge rate={cityRows.length > 0 ? Math.round(cityRows.reduce((s, r) => s + r.rate, 0) / cityRows.length) : 0} /></TableCell>
-                      <TableCell />
-                    </TableRow>
-                  </TableFooter>
-                </Table>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{(totalAchieved / 10000).toFixed(0)}万</div>
+                <div className="text-xs text-gray-500 mt-0.5">广告收入 | MoM {momTrend}</div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-        <div className="space-y-5">
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingUp className="w-4 h-4 text-emerald-500" />
-                <span className="text-sm font-semibold text-gray-900">收入达成率 TOP 5</span>
-              </div>
-              <div className="space-y-1.5">
-                {cityTop5.map((row, i) => (
-                  <div key={row.name} className="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-gray-50">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${i < 3 ? "bg-emerald-100 text-emerald-600" : "bg-gray-100 text-gray-400"}`}>{i + 1}</span>
-                    <span className="text-xs text-gray-700 flex-1 truncate">{row.name}</span>
-                    <span className="text-xs font-medium text-emerald-600">{row.rate}%</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm bg-white">
-            <CardContent className="pt-3 pb-3">
-              <div className="flex items-center gap-2 mb-2">
-                <TrendingDown className="w-4 h-4 text-red-500" />
-                <span className="text-sm font-semibold text-gray-900">收入达成率 Bottom 5</span>
-              </div>
-              <div className="space-y-1.5">
-                {cityBottom5.map((row, i) => (
-                  <div key={row.name} className="flex items-center gap-3 px-3 py-1 rounded-lg hover:bg-gray-50">
-                    <span className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 ${i < 3 ? "bg-red-100 text-red-500" : "bg-gray-100 text-gray-400"}`}>{i + 1}</span>
-                    <span className="text-xs text-gray-700 flex-1 truncate">{row.name}</span>
-                    <span className="text-xs font-medium text-red-500">{row.rate}%</span>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-none shadow-sm bg-white">
-            <div className="px-5 py-4 border-b border-gray-100">
-              <span className="text-sm font-semibold text-gray-900">关键指标</span>
             </div>
-            <CardContent className="p-4 space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">城市数量</span>
-                <span className="text-sm font-semibold text-gray-900">{cityRows.length}</span>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-violet-50">
+                <Gauge className="w-5 h-5 text-violet-600" />
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">平均达成率</span>
-                <span className="text-sm font-semibold text-emerald-600">{cityRows.length > 0 ? Math.round(cityRows.reduce((s, r) => s + r.rate, 0) / cityRows.length) : 0}%</span>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{avgMr}%</div>
+                <div className="text-xs text-gray-500 mt-0.5">MR | MoM {momTrend}</div>
               </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-500">总合作商</span>
-                <span className="text-sm font-semibold text-gray-900">{cityRows.reduce((s, r) => s + (r.partners || 0), 0)}</span>
+            </div>
+          </CardContent>
+        </Card>
+        <Card className="border-none shadow-sm bg-white">
+          <CardContent className="pt-5 pb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-emerald-50">
+                <MapPin className="w-5 h-5 text-emerald-600" />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div>
+                <div className="text-2xl font-bold text-gray-900">{cityRows.length}</div>
+                <div className="text-xs text-gray-500 mt-0.5">负责城市数</div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-    </>
+
+      {/* 城市明细表格 */}
+      <Card className="border-none shadow-sm bg-white">
+        <CardContent className="p-5">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-base font-semibold text-gray-900">全国城市达成明细</p>
+            <span className="text-xs text-gray-400">可用范围：平台管理员、广告业务经理（仅自己区域）、城市经理（仅自己区域）</span>
+          </div>
+          <CityDetailTable rows={cityRows} onCityClick={handleCityClick} />
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
